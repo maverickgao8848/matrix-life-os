@@ -81,24 +81,6 @@ const ReflectionPage: React.FC = () => {
         left: visibleLeft,
         right: arrayMove(visibleRight, visibleRight.indexOf(activeId), visibleRight.indexOf(overId)),
       });
-      return;
-    }
-
-    if (fromContainer === 'left' && toContainer === 'right') {
-      const nextLeft = visibleLeft.filter((id) => id !== activeId);
-      const nextRight = [...visibleRight];
-      const overIndex = overId === RIGHT_CONTAINER_ID ? nextRight.length : nextRight.indexOf(overId);
-      nextRight.splice(Math.max(0, overIndex), 0, activeId);
-      setReflectionLayout({ left: nextLeft, right: nextRight });
-      return;
-    }
-
-    if (fromContainer === 'right' && toContainer === 'left') {
-      const nextRight = visibleRight.filter((id) => id !== activeId);
-      const nextLeft = [...visibleLeft];
-      const overIndex = overId === LEFT_CONTAINER_ID ? nextLeft.length : nextLeft.indexOf(overId);
-      nextLeft.splice(Math.max(0, overIndex), 0, activeId);
-      setReflectionLayout({ left: nextLeft, right: nextRight });
     }
   };
 

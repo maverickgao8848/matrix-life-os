@@ -101,24 +101,6 @@ const Dashboard: React.FC = () => {
         main: visibleMain,
         side: arrayMove(visibleSide, visibleSide.indexOf(activeId), visibleSide.indexOf(overId)),
       });
-      return;
-    }
-
-    if (fromContainer === 'main' && toContainer === 'side') {
-      const nextMain = visibleMain.filter((id) => id !== activeId);
-      const nextSide = [...visibleSide];
-      const overIndex = overId === SIDE_CONTAINER_ID ? nextSide.length : nextSide.indexOf(overId);
-      nextSide.splice(Math.max(0, overIndex), 0, activeId);
-      setDashboardLayout({ main: nextMain, side: nextSide });
-      return;
-    }
-
-    if (fromContainer === 'side' && toContainer === 'main') {
-      const nextSide = visibleSide.filter((id) => id !== activeId);
-      const nextMain = [...visibleMain];
-      const overIndex = overId === MAIN_CONTAINER_ID ? nextMain.length : nextMain.indexOf(overId);
-      nextMain.splice(Math.max(0, overIndex), 0, activeId);
-      setDashboardLayout({ main: nextMain, side: nextSide });
     }
   };
 
