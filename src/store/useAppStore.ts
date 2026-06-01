@@ -14,6 +14,7 @@ import { createMoodSlice, type MoodSlice } from './slices/moodSlice';
 import { createTimeBlockSlice, type TimeBlockSlice } from './slices/timeBlockSlice';
 import { createInspirationSlice, type InspirationSlice } from './slices/inspirationSlice';
 import { createReflectionTemplateSlice, type ReflectionTemplateSlice } from './slices/reflectionTemplateSlice';
+import { createLayoutSlice, type LayoutSlice, DEFAULT_DASHBOARD_LAYOUT, DEFAULT_REFLECTION_LAYOUT, DEFAULT_SYSTEM_LAYOUT } from './slices/layoutSlice';
 import { migrateAllReflections } from '../utils/migrateReflectionData';
 import { migrateAppData, CURRENT_APP_VERSION } from '../utils/migrateAppData';
 import { electronStorage } from '../utils/electronStorage';
@@ -32,7 +33,8 @@ export type AppStore = TaskSlice &
   MoodSlice &
   TimeBlockSlice &
   InspirationSlice &
-  ReflectionTemplateSlice & {
+  ReflectionTemplateSlice &
+  LayoutSlice & {
     __version: string;
   };
 
@@ -53,6 +55,7 @@ export const useAppStore = create<AppStore>()(
       ...createTimeBlockSlice(...args),
       ...createInspirationSlice(...args),
       ...createReflectionTemplateSlice(...args),
+      ...createLayoutSlice(...args),
       __version: CURRENT_APP_VERSION,
     }),
     {
@@ -74,6 +77,9 @@ export const useAppStore = create<AppStore>()(
         timeBlocks: state.timeBlocks,
         inspirations: state.inspirations,
         reflectionTemplates: state.reflectionTemplates,
+        dashboardLayout: state.dashboardLayout,
+        reflectionLayout: state.reflectionLayout,
+        systemLayout: state.systemLayout,
         __version: state.__version,
       }),
       onRehydrateStorage: () => (state) => {
@@ -86,6 +92,11 @@ export const useAppStore = create<AppStore>()(
         );
         state.reflections = result.reflections;
         state.reflectionTemplates = result.templates;
+
+        // Ensure layout fields have defaults (for users upgrading from older versions)
+        if (!state.dashboardLayout) state.dashboardLayout = DEFAULT_DASHBOARD_LAYOUT;
+        if (!state.reflectionLayout) state.reflectionLayout = DEFAULT_REFLECTION_LAYOUT;
+        if (!state.systemLayout) state.systemLayout = DEFAULT_SYSTEM_LAYOUT;
 
         // Migrate app data version
         const migrated = migrateAppData(state, CURRENT_APP_VERSION);
