@@ -1,4 +1,14 @@
 import React from 'react';
+import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  useDroppable,
+} from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import TaskBoard from '../features/tasks/TaskBoard';
 import TodayProgress from '../features/tasks/TodayProgress';
 import EntertainmentPanel from '../features/entertainment/EntertainmentPanel';
@@ -10,14 +20,134 @@ import InspirationVaultPanel from '../features/inspiration/InspirationVaultPanel
 import ReflectionQuickEntry from '../features/reflections/ReflectionQuickEntry';
 import DataBackupPanel from '../features/data/DataBackupPanel';
 import MiniCalendar from '../components/MiniCalendar';
+import DraggablePanel from '../components/DraggablePanel';
 import AsciiBox from '../components/AsciiBox';
 import { useAppStore } from '../store/useAppStore';
 import { useSarcasticMonologue } from '../hooks/useSarcasticMonologue';
 
+// All possible panels per zone (defines default order if not yet saved)
+const ALL_MAIN_PANELS = ['todayProgress', 'dailyReflection', 'dataBackup', 'timeBlocks'];
+const ALL_SIDE_PANELS = ['principles', 'calendar', 'entertainment', 'habits', 'mood', 'inspiration'];
+const MAIN_CONTAINER_ID = 'dashboard-main';
+const SIDE_CONTAINER_ID = 'dashboard-side';
+
+interface DroppableColumnProps {
+  id: string;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}
+
+const DroppableColumn: React.FC<DroppableColumnProps> = ({ id, className, style, children }) => {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={className} style={style}>
+      {children}
+    </div>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const enabledModules = useAppStore((s) => s.enabledModules);
-  const isEnabled = (id: string) => enabledModules.includes(id as any);
+  const dashboardLayout = useAppStore((s) => s.dashboardLayout);
+  const setDashboardLayout = useAppStore((s) => s.setDashboardLayout);
   const { text: monologue } = useSarcasticMonologue();
+
+  const isEnabled = (id: string): boolean => {
+    if (['todayProgress', 'dailyReflection', 'dataBackup'].includes(id)) return true;
+    return enabledModules.includes(id as any);
+  };
+
+  // Ordered visible panels: respect saved order, append new/unknown panels at end
+  const visibleMain = [
+    ...dashboardLayout.main.filter((id) => ALL_MAIN_PANELS.includes(id) && isEnabled(id)),
+    ...ALL_MAIN_PANELS.filter((id) => isEnabled(id) && !dashboardLayout.main.includes(id)),
+  ];
+  const visibleSide = [
+    ...dashboardLayout.side.filter((id) => ALL_SIDE_PANELS.includes(id) && isEnabled(id)),
+    ...ALL_SIDE_PANELS.filter((id) => isEnabled(id) && !dashboardLayout.side.includes(id)),
+  ];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const findContainer = (id: string): 'main' | 'side' | null => {
+      if (id === MAIN_CONTAINER_ID || visibleMain.includes(id)) return 'main';
+      if (id === SIDE_CONTAINER_ID || visibleSide.includes(id)) return 'side';
+      return null;
+    };
+
+    const fromContainer = findContainer(activeId);
+    const toContainer = findContainer(overId);
+    if (!fromContainer || !toContainer) return;
+
+    if (fromContainer === 'main' && toContainer === 'main') {
+      setDashboardLayout({
+        main: arrayMove(visibleMain, visibleMain.indexOf(activeId), visibleMain.indexOf(overId)),
+        side: visibleSide,
+      });
+      return;
+    }
+
+    if (fromContainer === 'side' && toContainer === 'side') {
+      setDashboardLayout({
+        main: visibleMain,
+        side: arrayMove(visibleSide, visibleSide.indexOf(activeId), visibleSide.indexOf(overId)),
+      });
+      return;
+    }
+
+    if (fromContainer === 'main' && toContainer === 'side') {
+      const nextMain = visibleMain.filter((id) => id !== activeId);
+      const nextSide = [...visibleSide];
+      const overIndex = overId === SIDE_CONTAINER_ID ? nextSide.length : nextSide.indexOf(overId);
+      nextSide.splice(Math.max(0, overIndex), 0, activeId);
+      setDashboardLayout({ main: nextMain, side: nextSide });
+      return;
+    }
+
+    if (fromContainer === 'side' && toContainer === 'main') {
+      const nextSide = visibleSide.filter((id) => id !== activeId);
+      const nextMain = [...visibleMain];
+      const overIndex = overId === MAIN_CONTAINER_ID ? nextMain.length : nextMain.indexOf(overId);
+      nextMain.splice(Math.max(0, overIndex), 0, activeId);
+      setDashboardLayout({ main: nextMain, side: nextSide });
+    }
+  };
+
+  const renderPanel = (id: string): React.ReactNode => {
+    switch (id) {
+      case 'todayProgress':
+        return <AsciiBox title="DAILY PROGRESS"><TodayProgress /></AsciiBox>;
+      case 'dailyReflection':
+        return <AsciiBox title="DAILY REFLECTION"><ReflectionQuickEntry /></AsciiBox>;
+      case 'dataBackup':
+        return <DataBackupPanel />;
+      case 'timeBlocks':
+        return <TimeBlockPanel />;
+      case 'principles':
+        return <div style={{ marginTop: 'var(--space-7)' }}><PrinciplesPanel /></div>;
+      case 'calendar':
+        return <AsciiBox title="CALENDAR"><MiniCalendar /></AsciiBox>;
+      case 'entertainment':
+        return <EntertainmentPanel />;
+      case 'habits':
+        return <HabitTrackerPanel />;
+      case 'mood':
+        return <MoodTrackerPanel />;
+      case 'inspiration':
+        return <InspirationVaultPanel />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div>
@@ -38,58 +168,42 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Task Board: 7 days + Backlog */}
+      {/* Task Board: always fixed at top */}
       <TaskBoard />
 
-      {/* Golden Ratio Layout: 61.8% / 38.2% */}
-      <div
-        className="dashboard-layout"
-        style={{
-          display: 'flex',
-          gap: 'var(--space-8)',
-          maxWidth: '1400px',
-        }}
-      >
-        {/* Main Content Area ~61.8% */}
-        <div className="main-area" style={{ flex: '1 1 61.8%' }}>
-          <AsciiBox title="DAILY PROGRESS">
-            <TodayProgress />
-          </AsciiBox>
+      {/* Golden Ratio Layout: 61.8% / 38.2% — panels are drag-sortable within each column */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div
+          className="dashboard-layout"
+          style={{
+            display: 'flex',
+            gap: 'var(--space-8)',
+            maxWidth: '1400px',
+          }}
+        >
+          {/* Main Content Area ~61.8% */}
+          <DroppableColumn id={MAIN_CONTAINER_ID} className="main-area" style={{ flex: '1 1 61.8%' }}>
+            <SortableContext items={visibleMain} strategy={verticalListSortingStrategy}>
+              {visibleMain.map((id) => (
+                <DraggablePanel key={id} id={id}>
+                  {renderPanel(id)}
+                </DraggablePanel>
+              ))}
+            </SortableContext>
+          </DroppableColumn>
 
-          <AsciiBox title="DAILY REFLECTION">
-            <ReflectionQuickEntry />
-          </AsciiBox>
-
-          <DataBackupPanel />
-
-          {/* Optional modules in main zone */}
-          {isEnabled('timeBlocks') && <TimeBlockPanel />}
+          {/* Auxiliary Panel ~38.2% */}
+          <DroppableColumn id={SIDE_CONTAINER_ID} className="side-panel" style={{ flex: '1 1 38.2%' }}>
+            <SortableContext items={visibleSide} strategy={verticalListSortingStrategy}>
+              {visibleSide.map((id) => (
+                <DraggablePanel key={id} id={id}>
+                  {renderPanel(id)}
+                </DraggablePanel>
+              ))}
+            </SortableContext>
+          </DroppableColumn>
         </div>
-
-        {/* Auxiliary Panel ~38.2% */}
-        <div className="side-panel" style={{ flex: '1 1 38.2%' }}>
-          {isEnabled('principles') && (
-            <div style={{ marginTop: 'var(--space-7)' }}>
-              <PrinciplesPanel />
-            </div>
-          )}
-
-          {isEnabled('calendar') && (
-            <AsciiBox title="CALENDAR">
-              <MiniCalendar />
-            </AsciiBox>
-          )}
-
-          {isEnabled('entertainment') && <EntertainmentPanel />}
-
-          {/* Optional modules in side zone */}
-          {isEnabled('habits') && <HabitTrackerPanel />}
-
-          {isEnabled('mood') && <MoodTrackerPanel />}
-
-          {isEnabled('inspiration') && <InspirationVaultPanel />}
-        </div>
-      </div>
+      </DndContext>
     </div>
   );
 };

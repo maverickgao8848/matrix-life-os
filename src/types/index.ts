@@ -174,6 +174,16 @@ export interface TimeBlock {
   completed: boolean;
 }
 
+export interface DashboardLayout {
+  main: string[];
+  side: string[];
+}
+
+export interface TwoColumnLayout {
+  left: string[];
+  right: string[];
+}
+
 export interface AppState {
   tasks: Task[];
   calendarEvents: CalendarEvent[];
@@ -185,6 +195,14 @@ export interface AppState {
   inboxItems: InboxItem[];
   config: AppConfig;
   enabledModules: ModuleId[];
+  habits: Habit[];
+  moods: MoodEntry[];
+  timeBlocks: TimeBlock[];
+  inspirations: Inspiration[];
+  reflectionTemplates: ReflectionTemplate[];
+  dashboardLayout: DashboardLayout;
+  reflectionLayout: TwoColumnLayout;
+  systemLayout: TwoColumnLayout;
   __version: string;
 }
 
