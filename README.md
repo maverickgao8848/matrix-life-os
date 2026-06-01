@@ -9,12 +9,14 @@
 <!-- [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)]() -->
 <!-- [![License](https://img.shields.io/github/license/maverickgao8848/matrix-life-os)](LICENSE) -->
 ---
-<img width="2713" height="1572" alt="image" src="https://github.com/user-attachments/assets/03f83d9d-9d28-40b6-9741-59136970861e" />
+<img width="2705" height="1515" alt="2fb0b355fc8224b26eb2bd6da4c2fc50" src="https://github.com/user-attachments/assets/8e2737e1-f882-468d-9718-47ae7b36710f" />
 
-<img width="2666" height="1518" alt="image" src="https://github.com/user-attachments/assets/6bac0af2-317b-4d69-a599-ec4529cb67da" />
+<img width="2671" height="1333" alt="0e44d06f44e8c8a0632da3a7f8aaa638" src="https://github.com/user-attachments/assets/d605bbef-f7ae-4104-a727-f2ac7ceed177" />
 
-<img width="2717" height="1463" alt="image" src="https://github.com/user-attachments/assets/1f302fa5-0eca-4b0c-9835-2f55069a4c2a" />
+<img width="2637" height="1458" alt="2d9bbb594038f77df11ec6ffdbbeea79" src="https://github.com/user-attachments/assets/8203182b-961e-47e5-8eb0-8fccae257702" />
 
+
+<img width="2408" height="1417" alt="070db3970030c5148a53bf608d6f84b7" src="https://github.com/user-attachments/assets/09d2ee89-63a0-4afd-9a10-8e3d29dfefe0" />
 
 ---
 
