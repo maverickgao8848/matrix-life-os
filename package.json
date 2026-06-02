@@ -34,10 +34,7 @@
       ],
       "category": "public.app-category.productivity"
     },
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    }
+    "publish": null
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

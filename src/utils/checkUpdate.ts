@@ -1,11 +1,11 @@
 /**
- * 检查更新工具（路径 A）
- * 从 GitHub Releases 拉取 latest.json 并对比本地版本
+ * 检查更新工具
+ * 从 GitHub API 拉取 latest release 并对比本地版本
  */
 
 declare const __APP_VERSION__: string;
 
-export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.2.0';
+export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.2.1';
 
 export interface UpdateInfo {
   version: string;
@@ -13,8 +13,15 @@ export interface UpdateInfo {
   releaseNotes?: string;
 }
 
-const LATEST_JSON_URL =
-  'https://github.com/buend/ascii-life-os/releases/latest/download/latest.json';
+const GITHUB_API_URL =
+  'https://api.github.com/repos/buend/ascii-life-os/releases/latest';
+
+/**
+ * 去除版本号前缀的 v/V
+ */
+function stripV(version: string): string {
+  return version.replace(/^v/i, '');
+}
 
 export async function checkUpdate(
   currentVersion: string
@@ -27,9 +34,10 @@ export async function checkUpdate(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const res = await fetch(LATEST_JSON_URL, {
+    const res = await fetch(GITHUB_API_URL, {
       signal: controller.signal,
       cache: 'no-store',
+      headers: { Accept: 'application/vnd.github+json' },
     });
     clearTimeout(timeoutId);
 
@@ -37,8 +45,23 @@ export async function checkUpdate(
       throw new Error(`HTTP ${res.status}`);
     }
 
-    const latest: UpdateInfo = await res.json();
-    const hasUpdate = compareVersion(latest.version, currentVersion) > 0;
+    const data = await res.json();
+    const tagName: string = data.tag_name || '';
+    const latestVersion = stripV(tagName);
+    const latestUrl: string = data.html_url || `https://github.com/buend/ascii-life-os/releases/tag/${tagName}`;
+    const releaseNotes: string = data.body || '';
+
+    if (!latestVersion) {
+      throw new Error('无法解析最新版本号');
+    }
+
+    const latest: UpdateInfo = {
+      version: latestVersion,
+      url: latestUrl,
+      releaseNotes,
+    };
+
+    const hasUpdate = compareVersion(latestVersion, stripV(currentVersion)) > 0;
 
     return {
       hasUpdate,

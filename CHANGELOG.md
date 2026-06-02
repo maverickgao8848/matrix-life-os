@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - 反思模板默认数据 — 新用户首次打开自动加载「障碍突破」模板（5 个问题）
 
 ### Fixed
+- 更新检测 404 — 移除对 `latest.json` 的依赖，改为直接调用 GitHub Releases API，解决"更新失败"误报
 - 暗色模式对比度 — 提升文字色值亮度，修复伤眼问题（WCAG AA 合规）
 - 任务能力值编辑 — 已有任务支持修改/补加/移除能力关联
 - OKR→任务能力关联 — 收纳箱 KR 发送到看板前可选择能力+分值
