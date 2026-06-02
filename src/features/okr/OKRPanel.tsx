@@ -12,6 +12,7 @@ const OKRPanel: React.FC = () => {
   const {
     objectives,
     inboxItems,
+    abilities,
     addObjective,
     deleteObjective,
     updateObjectiveTitle,
@@ -23,9 +24,11 @@ const OKRPanel: React.FC = () => {
     removeFromInbox,
     toggleInboxItem,
     addTask,
+    updateInboxItemAbility,
   } = useAppStore();
 
   const currentMonth = getCurrentMonth();
+  const [viewMonth, setViewMonth] = useState(currentMonth);
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [isAddingObj, setIsAddingObj] = useState(false);
   const [newObjTitle, setNewObjTitle] = useState('');
@@ -36,7 +39,7 @@ const OKRPanel: React.FC = () => {
   const [editingKR, setEditingKR] = useState<{ objId: string; krId: string } | null>(null);
   const [editKRContent, setEditKRContent] = useState('');
 
-  const currentObjectives = objectives.filter((o) => o.period === currentMonth);
+  const currentObjectives = objectives.filter((o) => o.period === viewMonth);
 
   const toggleCollapse = (id: string) => {
     setCollapsedIds((prev) => {
@@ -49,10 +52,22 @@ const OKRPanel: React.FC = () => {
 
   const handleAddObjective = () => {
     if (newObjTitle.trim()) {
-      addObjective(newObjTitle.trim(), currentMonth);
+      addObjective(newObjTitle.trim(), viewMonth);
       setNewObjTitle('');
       setIsAddingObj(false);
     }
+  };
+
+  const goToPrevMonth = () => {
+    const [year, month] = viewMonth.split('-').map(Number);
+    const d = new Date(year, month - 2, 1);
+    setViewMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  };
+
+  const goToNextMonth = () => {
+    const [year, month] = viewMonth.split('-').map(Number);
+    const d = new Date(year, month, 1);
+    setViewMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
   };
 
   const handleAddKR = (objId: string) => {
@@ -101,8 +116,52 @@ const OKRPanel: React.FC = () => {
   const isInInbox = (krId: string) => inboxItems.some((item) => item.id === krId);
 
   return (
-    <AsciiBox title={`OKR (${currentMonth})`}>
-      <div className="font-caption" style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-2)' }}>
+    <AsciiBox title={`OKR (${viewMonth})`}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+        <button
+          onClick={goToPrevMonth}
+          className="font-caption"
+          style={{
+            background: 'none', border: '1px solid var(--border-primary)',
+            color: 'var(--text-secondary)', cursor: 'pointer',
+            fontFamily: 'var(--font-mono)', padding: 'var(--space-1) var(--space-2)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-primary)'; }}
+        >
+          {'<'}
+        </button>
+        <span className="font-h3" style={{ color: 'var(--accent-gold)' }}>
+          {viewMonth}
+        </span>
+        <button
+          onClick={goToNextMonth}
+          className="font-caption"
+          style={{
+            background: 'none', border: '1px solid var(--border-primary)',
+            color: 'var(--text-secondary)', cursor: 'pointer',
+            fontFamily: 'var(--font-mono)', padding: 'var(--space-1) var(--space-2)',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-primary)'; }}
+        >
+          {'>'}
+        </button>
+        {viewMonth !== currentMonth && (
+          <button
+            onClick={() => setViewMonth(currentMonth)}
+            className="font-caption"
+            style={{
+              background: 'none', border: '1px solid var(--accent-gold)',
+              color: 'var(--accent-gold)', cursor: 'pointer',
+              fontFamily: 'var(--font-mono)', padding: 'var(--space-1) var(--space-2)',
+            }}
+          >
+            本月
+          </button>
+        )}
+      </div>
+      <div className="font-caption" style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
         KR 完成: {completedKRCount}/{totalKRCount} | 收纳箱: {inboxItems.length} 项
       </div>
 
@@ -428,6 +487,7 @@ const OKRPanel: React.FC = () => {
                   gap: 'var(--space-2)',
                   padding: 'var(--space-1) 0',
                   borderBottom: '1px solid var(--border-primary)',
+                  flexWrap: 'wrap',
                 }}
               >
                 <input
@@ -442,13 +502,65 @@ const OKRPanel: React.FC = () => {
                     flex: 1,
                     textDecoration: item.completed ? 'line-through' : 'none',
                     color: item.completed ? 'var(--text-secondary)' : 'var(--text-primary)',
+                    minWidth: '120px',
                   }}
                 >
                   {item.content}
                 </span>
+                {/* Ability selector for inbox item */}
+                <select
+                  value={item.abilityId || ''}
+                  onChange={(e) => {
+                    const abilityId = e.target.value || undefined;
+                    const ability = abilities.find((a) => a.id === abilityId);
+                    updateInboxItemAbility(item.id, abilityId, abilityId ? (item.abilityPoints || 10) : undefined, ability?.name);
+                  }}
+                  className="font-caption"
+                  style={{
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-primary)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '2px var(--space-1)',
+                    outline: 'none',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                  }}
+                >
+                  <option value="">-- 能力 --</option>
+                  {abilities.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+                {item.abilityId && (
+                  <input
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={item.abilityPoints || ''}
+                    onChange={(e) => {
+                      const points = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                      updateInboxItemAbility(item.id, item.abilityId, points, item.abilityName);
+                    }}
+                    placeholder="分"
+                    className="font-caption"
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-primary)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-mono)',
+                      padding: '2px var(--space-1)',
+                      width: '45px',
+                      outline: 'none',
+                      fontSize: '11px',
+                    }}
+                  />
+                )}
                 <span
                   className="font-caption"
-                  style={{ color: 'var(--text-muted)' }}
+                  style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}
                 >
                   {item.abilityId ? (
                     <>← {item.abilityName} +{item.abilityPoints}pts</>
@@ -465,6 +577,7 @@ const OKRPanel: React.FC = () => {
                     color: 'var(--text-secondary)', cursor: 'pointer',
                     fontFamily: 'var(--font-mono)', padding: '0 var(--space-1)',
                     transition: 'all var(--duration-instant)',
+                    whiteSpace: 'nowrap',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text-primary)';

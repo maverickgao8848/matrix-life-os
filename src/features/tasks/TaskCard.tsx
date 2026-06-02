@@ -11,6 +11,8 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(task.content);
+  const [editAbilityId, setEditAbilityId] = useState<string | undefined>(task.abilityId);
+  const [editAbilityPoints, setEditAbilityPoints] = useState<number | undefined>(task.abilityPoints);
   const { toggleTask, deleteTask, updateTask, incrementScore, abilities } = useAppStore();
 
   const {
@@ -30,7 +32,15 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
 
   const handleSave = () => {
     if (editContent.trim()) {
-      updateTask(task.id, { content: editContent.trim() });
+      const updates: Partial<Task> = { content: editContent.trim() };
+      if (editAbilityId) {
+        updates.abilityId = editAbilityId;
+        updates.abilityPoints = editAbilityPoints && editAbilityPoints > 0 ? editAbilityPoints : 10;
+      } else {
+        updates.abilityId = undefined;
+        updates.abilityPoints = undefined;
+      }
+      updateTask(task.id, updates);
     }
     setIsEditing(false);
   };
@@ -39,6 +49,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
     if (e.key === 'Enter') handleSave();
     if (e.key === 'Escape') {
       setEditContent(task.content);
+      setEditAbilityId(task.abilityId);
+      setEditAbilityPoints(task.abilityPoints);
       setIsEditing(false);
     }
   };
@@ -69,25 +81,72 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       }}
     >
       {isEditing ? (
-        <input
-          autoFocus
-          value={editContent}
-          onChange={(e) => setEditContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onBlur={handleSave}
-          className="font-body"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '1px solid var(--accent-gold)',
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-mono)',
-            padding: '0 var(--space-1)',
-            width: '100%',
-            outline: 'none',
-            caretColor: 'var(--accent-gold)',
-          }}
-        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+          <input
+            autoFocus
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={handleSave}
+            className="font-body"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              borderBottom: '1px solid var(--accent-gold)',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-mono)',
+              padding: '0 var(--space-1)',
+              width: '100%',
+              outline: 'none',
+              caretColor: 'var(--accent-gold)',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <select
+              value={editAbilityId || ''}
+              onChange={(e) => setEditAbilityId(e.target.value || undefined)}
+              onKeyDown={handleKeyDown}
+              className="font-caption"
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-primary)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-mono)',
+                padding: '2px var(--space-1)',
+                outline: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="">-- 无 --</option>
+              {abilities.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+            {editAbilityId && (
+              <input
+                type="number"
+                min={1}
+                max={100}
+                value={editAbilityPoints || ''}
+                onChange={(e) => setEditAbilityPoints(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                onKeyDown={handleKeyDown}
+                placeholder="分值"
+                className="font-caption"
+                style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-primary)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-mono)',
+                  padding: '2px var(--space-1)',
+                  width: '60px',
+                  outline: 'none',
+                }}
+              />
+            )}
+          </div>
+        </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span
@@ -122,6 +181,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                setEditContent(task.content);
+                setEditAbilityId(task.abilityId);
+                setEditAbilityPoints(task.abilityPoints);
                 setIsEditing(true);
               }}
               className="font-caption"

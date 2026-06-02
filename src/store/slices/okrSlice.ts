@@ -14,6 +14,7 @@ export interface OKRSlice {
   collectToInbox: (objectiveId: string, krId: string) => void;
   removeFromInbox: (id: string) => void;
   toggleInboxItem: (id: string) => void;
+  updateInboxItemAbility: (id: string, abilityId?: string, abilityPoints?: number, abilityName?: string) => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -131,6 +132,16 @@ export const createOKRSlice: StateCreator<OKRSlice> = (set, get) => ({
     set({
       inboxItems: get().inboxItems.map((item) =>
         item.id === id ? { ...item, completed: !item.completed } : item
+      ),
+    });
+  },
+
+  updateInboxItemAbility: (id, abilityId, abilityPoints, abilityName) => {
+    set({
+      inboxItems: get().inboxItems.map((item) =>
+        item.id === id
+          ? { ...item, abilityId, abilityPoints, abilityName: abilityName || item.abilityName }
+          : item
       ),
     });
   },

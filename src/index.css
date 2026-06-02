@@ -14,9 +14,9 @@
   --bg-secondary: #241e16;
   --bg-tertiary: #2c261e;
 
-  --text-primary: #b0a080;
-  --text-secondary: #5a5040;
-  --text-muted: #3d3528;
+  --text-primary: #c8b898;
+  --text-secondary: #8a7a60;
+  --text-muted: #5a5040;
 
   --accent-gold: #a08040;
   --accent-success: #5a7a5a;
@@ -305,6 +305,25 @@ pre, code {
 /* ============================================================
    9. Responsive
    ============================================================ */
+
+@media (min-width: 1920px) {
+  .task-column {
+    min-width: 160px;
+  }
+  .dashboard-layout {
+    padding: 0 var(--space-6) !important;
+  }
+}
+
+@media (min-width: 2560px) {
+  .task-column {
+    min-width: 180px;
+  }
+  .dashboard-layout {
+    padding: 0 var(--space-8) !important;
+    gap: var(--space-10) !important;
+  }
+}
 
 @media (max-width: 1279px) {
   .dashboard-layout {

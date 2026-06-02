@@ -11,6 +11,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import TaskColumn from './TaskColumn';
 import OKRInboxColumn from '../okr/OKRInboxColumn';
 import { useAppStore } from '../../store/useAppStore';
+import { useRef, useEffect } from 'react';
 import { aloCopy } from '../../copy/alo-copy';
 import { format, addDays } from 'date-fns';
 import {
@@ -32,8 +33,15 @@ const DAY_LABELS: Record<string, string> = {
 };
 
 const TaskBoard: React.FC = () => {
-  const { tasks, moveTask, reorderTasks, inboxItems, addTask, removeFromInbox } = useAppStore();
+  const { tasks, moveTask, reorderTasks, inboxItems, addTask, removeFromInbox, config } = useAppStore();
   const [weekStart, setWeekStartState] = useState(() => getWeekStart());
+  const boardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (boardRef.current) {
+      boardRef.current.style.setProperty('--task-column-width', `${config.taskColumnWidth ?? 260}px`);
+    }
+  }, [config.taskColumnWidth]);
 
   const weekDates = getWeekDates(weekStart);
 
@@ -198,6 +206,7 @@ const TaskBoard: React.FC = () => {
         </div>
 
         <div
+          ref={boardRef}
           className="task-board-scroll"
           style={{
             display: 'flex',

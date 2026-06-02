@@ -22,6 +22,7 @@ export const createConfigSlice: StateCreator<ConfigSlice> = (set) => ({
     currentWeekStart: getWeekStart(),
     lastVisitDate: getTodayString(),
     theme: 'dark',
+    taskColumnWidth: 260,
   },
 
   updateConfig: (config) =>

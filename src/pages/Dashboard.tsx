@@ -160,7 +160,9 @@ const Dashboard: React.FC = () => {
           style={{
             display: 'flex',
             gap: 'var(--space-8)',
-            maxWidth: '1400px',
+            maxWidth: '1600px',
+            margin: '0 auto',
+            padding: '0 var(--space-4)',
           }}
         >
           {/* Main Content Area ~61.8% */}

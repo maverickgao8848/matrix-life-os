@@ -56,7 +56,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
           ? '1px dashed var(--border-primary)'
           : '1px solid var(--border-primary)',
         backgroundColor: 'var(--bg-secondary)',
-        minWidth: '140px',
+        minWidth: 'var(--task-column-width, 140px)',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',

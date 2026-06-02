@@ -114,6 +114,7 @@ export interface AppConfig {
   currentWeekStart: string;
   lastVisitDate: string;
   theme: 'dark' | 'light';
+  taskColumnWidth?: number;
 }
 
 // ─── Module System ───

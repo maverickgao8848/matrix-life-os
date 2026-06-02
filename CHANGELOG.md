@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+## [0.2.1] - 2026-06-02
+
+### Added
+- OKR 跨月份查看 — 支持 `<` / `>` 切换月份，历史 OKR 数据不再丢失
+- 存储容量预警 — 数据超过 4MB 时控制台警告，超过 4.5MB 时顶部横幅提示导出清理
+- 任务看板列宽记忆 — 新增 `taskColumnWidth` 配置，默认 260px
+- 构建版本号自动注入 — `vite.config.ts` 读取 `package.json` version，更新检查更准确
+- 反思模板默认数据 — 新用户首次打开自动加载「障碍突破」模板（5 个问题）
+
+### Fixed
+- 暗色模式对比度 — 提升文字色值亮度，修复伤眼问题（WCAG AA 合规）
+- 任务能力值编辑 — 已有任务支持修改/补加/移除能力关联
+- OKR→任务能力关联 — 收纳箱 KR 发送到看板前可选择能力+分值
+- 2K 屏布局适配 — 任务看板与下方面板对齐
+
 ## [0.1.0] - 2025-05-31
 
 ### Added

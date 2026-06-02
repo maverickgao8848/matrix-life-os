@@ -16,6 +16,8 @@ function App() {
   const [hasUpdate, setHasUpdate] = useState(false);
   const config = useAppStore((s) => s.config);
   const toggleTheme = useAppStore((s) => s.toggleTheme);
+  const storageWarning = useAppStore((s) => s.storageWarning);
+  const setStorageWarning = useAppStore((s) => s.setStorageWarning);
   const lastWordsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -233,6 +235,59 @@ function App() {
           </button>
         </div>
       </nav>
+
+      {storageWarning && (
+        <div
+          style={{
+            backgroundColor: 'var(--accent-danger)',
+            color: 'var(--bg-primary)',
+            padding: 'var(--space-2) var(--space-4)',
+            textAlign: 'center',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 'var(--space-3)',
+          }}
+        >
+          <span>
+            ⚠ 数据体积接近上限，建议导出备份并清理历史数据
+          </span>
+          <button
+            onClick={() => {
+              setPage('system');
+              setStorageWarning(false);
+            }}
+            style={{
+              background: 'var(--bg-primary)',
+              border: 'none',
+              color: 'var(--accent-danger)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              padding: '2px var(--space-2)',
+              fontSize: '12px',
+            }}
+          >
+            [导出并清理]
+          </button>
+          <button
+            onClick={() => setStorageWarning(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--bg-primary)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              padding: '2px var(--space-2)',
+              fontSize: '12px',
+              opacity: 0.8,
+            }}
+          >
+            [x]
+          </button>
+        </div>
+      )}
 
       <ModulePicker isOpen={modulePickerOpen} onClose={() => setModulePickerOpen(false)} />
 
