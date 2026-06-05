@@ -14,7 +14,7 @@ ALO 不是又一个 Todo App。它是一座**数字抄写室（Scriptorium）**�
 
 <img width="2705" height="1515" alt="action-desk" src="https://github.com/user-attachments/assets/8e2737e1-f882-468d-9718-47ae7b36710f" />
 
-*行动台：捕捉 → 澄清 → 安排 → 执行，所有决策在一屏内完成。*
+*行动台：捕捉、支撑与执行交汇之处，所有决策在一屏内完成。*
 
 <img width="2671" height="1333" alt="review-archive" src="https://github.com/user-attachments/assets/d605bbef-f7ae-4104-a727-f2ac7ceed177" />
 
@@ -36,9 +36,14 @@ ALO 不是又一个 Todo App。它是一座**数字抄写室（Scriptorium）**�
 [ 行动台 ]  [ 回顾档案 ]  [ 系统 ]
 ```
 
-- **行动台**：GTD 前四步——捕捉、澄清、组织、执行。
-- **回顾档案**：GTD 后两步——回顾、归档， plus 能力培养与数据备份。
-- **系统**：低频配置、模块开关、数据体检、版本更新。
+ALO 把 GTD 抽象成四个阶段，每个模块只属于自己的阶段：
+
+- **捕捉**：快速收集箱、灵感仓库。任何念头先丢进来，不判断、不排序。
+- **支撑**：原则、日历、习惯、心情、娱乐。它们不直接产生行动，但决定行动的质量和可持续性。
+- **执行**：周看板、OKR、时间块。唯一产生「完成」的地方。
+- **洞察**：反思、能力雷达、光荣榜。复盘、校准、纪念。
+
+行动台承载「捕捉 / 支撑 / 执行」，回顾档案承载「洞察」，系统则负责低频配置与数据安全。
 
 ### 3. 过程轻，结果重
 
@@ -51,14 +56,16 @@ ALO 是个有点洁癖的管家：
 
 ### 4. 单向行动流
 
-跨模块拖拽遵循严格的 GTD 信息流，不做 Notion 式任意互通：
+跨模块拖拽遵循严格的四阶段流向，不做 Notion 式任意互通：
 
 ```
-来源区（收集箱 / KR / 灵感 / 娱乐 / 能力子任务）
+捕捉（收集箱 / 灵感）
+        ↓ clarify
+支撑（原则 / 日历 / 习惯 / 心情 / 娱乐）
         ↓ arrange
-执行区（周看板 / 时间块 / 日历）
+执行（周看板 / OKR / 时间块 / 日历）
         ↓ complete
-回顾区（反思 / 光荣榜）
+洞察（反思 / 能力雷达 / 光荣榜）
 ```
 
 > 值得做的东西，可以被安排到某天；原处保留，安排处执行。
@@ -216,12 +223,7 @@ matrix-app/
 
 ---
 
-## 详细文档
-
-- [用户手册 (user-guide.md)](docs/alo/user-guide.md)
-- [产品需求文档 (PRD_ALO.md)](docs/alo/PRD_ALO.md)
-- [架构设计 (ARCHITECTURE.md)](docs/alo/ARCHITECTURE.md)
-- [视觉规范 (alo-visual-scheme-2026-05-24.md)](docs/alo/alo-visual-scheme-2026-05-24.md)
+详细设计文档见 [`docs/alo/`](docs/alo/)。
 
 ---
 
