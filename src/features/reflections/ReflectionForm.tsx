@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { aloCopy } from '../../copy/alo-copy';
 import { generateTags } from '../../hooks/useReflectionTags';
@@ -15,7 +15,7 @@ const ReflectionForm: React.FC<ReflectionFormProps> = ({
   existingReflection,
   onSave,
 }) => {
-  const { saveReflection, reflectionTemplates, getDefaultTemplate, getMoodByDate, incrementScore } = useAppStore();
+  const { saveReflection, reflectionTemplates, getDefaultTemplate, getMoodByDate, incrementScore, objectives } = useAppStore();
 
   const defaultTemplate = getDefaultTemplate();
   const templateId = existingReflection?.templateId ?? defaultTemplate?.id ?? '';
@@ -23,23 +23,32 @@ const ReflectionForm: React.FC<ReflectionFormProps> = ({
 
   const todayMood = getMoodByDate(date);
 
-  const [answers, setAnswers] = useState<Record<string, string | number>>({});
-
-  useEffect(() => {
+  const [answers, setAnswers] = useState<Record<string, string | number | boolean>>(() => {
     if (existingReflection) {
-      setAnswers({ ...existingReflection.answers });
-    } else if (template) {
-      const initial: Record<string, string | number> = {};
+      return { ...existingReflection.answers };
+    }
+    if (template) {
+      const initial: Record<string, string | number | boolean> = {};
       template.questions.forEach((q) => {
         if (q.type === 'number') {
           initial[q.id] = q.min ?? 1;
+        } else if (q.type === 'boolean') {
+          initial[q.id] = false;
         } else {
           initial[q.id] = '';
         }
       });
-      setAnswers(initial);
+      return initial;
     }
-  }, [existingReflection, template]);
+    return {};
+  });
+
+  const [linkedObjectiveId, setLinkedObjectiveId] = useState<string>(() => {
+    if (existingReflection) {
+      return existingReflection.linkedObjectiveIds[0] ?? '';
+    }
+    return '';
+  });
 
   const handleSubmit = () => {
     if (!template) return;
@@ -56,6 +65,7 @@ const ReflectionForm: React.FC<ReflectionFormProps> = ({
       templateId: template.id,
       answers,
       tags,
+      linkedObjectiveIds: linkedObjectiveId ? [linkedObjectiveId] : [],
     });
 
     // 能力联动：给关联能力的非空答案加分
@@ -214,8 +224,76 @@ const ReflectionForm: React.FC<ReflectionFormProps> = ({
               ))}
             </select>
           )}
+
+          {q.type === 'boolean' && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+              <button
+                type="button"
+                onClick={() =>
+                  setAnswers((prev) => ({ ...prev, [q.id]: true }))
+                }
+                className="font-body"
+                style={{
+                  background: answers[q.id] === true ? 'var(--accent-success)' : 'transparent',
+                  border: '1px solid var(--border-primary)',
+                  color: answers[q.id] === true ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  padding: 'var(--space-1) var(--space-3)',
+                  transition: `background-color var(--duration-instant) var(--ease-instant), color var(--duration-instant) var(--ease-instant)`,
+                }}
+              >
+                是
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setAnswers((prev) => ({ ...prev, [q.id]: false }))
+                }
+                className="font-body"
+                style={{
+                  background: answers[q.id] === false ? 'var(--accent-danger)' : 'transparent',
+                  border: '1px solid var(--border-primary)',
+                  color: answers[q.id] === false ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  padding: 'var(--space-1) var(--space-3)',
+                  transition: `background-color var(--duration-instant) var(--ease-instant), color var(--duration-instant) var(--ease-instant)`,
+                }}
+              >
+                否
+              </button>
+            </div>
+          )}
         </div>
       ))}
+
+      {/* 关联 Objective */}
+      <div style={{ marginBottom: 'var(--space-4)' }}>
+        <label className="font-caption" style={labelStyle}>
+          今天主要推进了哪个 O？
+        </label>
+        <select
+          value={linkedObjectiveId}
+          onChange={(e) => setLinkedObjectiveId(e.target.value)}
+          className="font-body"
+          style={{
+            ...inputStyle,
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border-primary)',
+            padding: 'var(--space-1) var(--space-2)',
+          }}
+        >
+          <option value="">-- 不关联 --</option>
+          {objectives
+            .filter((o) => o.status === 'active')
+            .map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.title}
+              </option>
+            ))}
+        </select>
+      </div>
 
       <button
         onClick={handleSubmit}

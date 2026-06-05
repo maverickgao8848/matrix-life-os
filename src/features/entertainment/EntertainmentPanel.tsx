@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import AsciiBox from '../../components/AsciiBox';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const EntertainmentPanel: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
@@ -28,7 +29,7 @@ const EntertainmentPanel: React.FC = () => {
   };
 
   return (
-    <AsciiBox title="ENTERTAINMENT">
+    <AsciiBox title={titlesCopy.entertainment}>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {todayEnts.map((ent) => (
           <li

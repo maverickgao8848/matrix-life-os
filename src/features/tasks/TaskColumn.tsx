@@ -11,15 +11,19 @@ interface TaskColumnProps {
   tasks: Task[];
   title: string;
   dateLabel?: string;
-  isBacklog?: boolean;
+
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dateLabel, isBacklog }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dateLabel }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [newContent, setNewContent] = useState('');
   const [selectedAbilityId, setSelectedAbilityId] = useState<string>('');
   const [abilityPoints, setAbilityPoints] = useState<number>(10);
+  const [abilityPointsRaw, setAbilityPointsRaw] = useState<string>('10');
   const { addTask, abilities } = useAppStore();
+
+  const today = new Date().toISOString().split('T')[0];
+  const isToday = date === today;
 
   const droppableId = `column-${date}`;
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({ id: droppableId });
@@ -34,6 +38,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
       setNewContent('');
       setSelectedAbilityId('');
       setAbilityPoints(10);
+      setAbilityPointsRaw('10');
       setIsAdding(false);
     }
   };
@@ -44,6 +49,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
       setNewContent('');
       setSelectedAbilityId('');
       setAbilityPoints(10);
+      setAbilityPointsRaw('10');
       setIsAdding(false);
     }
   };
@@ -52,8 +58,8 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
     <div
       className="task-column"
       style={{
-        border: isBacklog
-          ? '1px dashed var(--border-primary)'
+        border: isToday
+          ? '2px solid var(--accent-gold)'
           : '1px solid var(--border-primary)',
         backgroundColor: 'var(--bg-secondary)',
         minWidth: 'var(--task-column-width, 140px)',
@@ -68,7 +74,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
         style={{
           padding: 'var(--space-2) var(--space-3)',
           borderBottom: '1px solid var(--border-primary)',
-          backgroundColor: isBacklog ? 'var(--bg-tertiary)' : 'transparent',
+          backgroundColor: isToday ? 'rgba(160, 128, 64, 0.08)' : 'transparent',
           textAlign: 'center',
         }}
       >
@@ -158,8 +164,13 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ date, column, tasks, title, dat
                 {selectedAbilityId && (
                   <input
                     type="number"
-                    value={abilityPoints}
-                    onChange={(e) => setAbilityPoints(Number(e.target.value))}
+                    step="0.1"
+                    value={abilityPointsRaw}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setAbilityPointsRaw(raw);
+                      setAbilityPoints(raw ? parseFloat(raw) : 0);
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder="分值"
                     className="font-caption"

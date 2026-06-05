@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 import InspirationForm from './InspirationForm';
 import AsciiBox from '../../components/AsciiBox';
 
@@ -38,7 +39,7 @@ const InspirationVaultPanel: React.FC = () => {
 
   return (
     <>
-      <AsciiBox title="INSPIRATION VAULT">
+      <AsciiBox title={titlesCopy.inspirationVault}>
         {/* Tag filter */}
         {allTags.length > 0 && (
           <div style={{ marginBottom: 'var(--space-3)', display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>

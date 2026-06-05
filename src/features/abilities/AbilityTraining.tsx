@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import AsciiBox from '../../components/AsciiBox';
 import AsciiProgress from '../../components/AsciiProgress';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const AbilityTraining: React.FC = () => {
   const { abilities, inboxItems, addAbility, deleteAbility, updateAbility, addAbilityTask, removeAbilityTask, incrementScore, collectAbilityTaskToInbox } = useAppStore();
@@ -28,6 +29,7 @@ const AbilityTraining: React.FC = () => {
   const handleAddTask = (abilityId: string) => {
     if (newTaskContent.trim()) {
       addAbilityTask(abilityId, { content: newTaskContent.trim(), points: newTaskPoints });
+
       setNewTaskContent('');
       setNewTaskPoints(10);
     }
@@ -51,7 +53,7 @@ const AbilityTraining: React.FC = () => {
   };
 
   return (
-    <AsciiBox title="ABILITY TRAINING">
+    <AsciiBox title={titlesCopy.abilityTraining}>
       {abilities.length === 0 && (
         <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
           <img
@@ -134,6 +136,7 @@ const AbilityTraining: React.FC = () => {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
+
                 <button
                   onClick={() => startEditing(ability)}
                   className="font-caption"

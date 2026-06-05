@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import AsciiBox from '../../components/AsciiBox';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const DataBackupPanel: React.FC = () => {
   const store = useAppStore();
@@ -74,7 +75,7 @@ const DataBackupPanel: React.FC = () => {
   };
 
   return (
-    <AsciiBox title="DATA BACKUP">
+    <AsciiBox title={titlesCopy.dataBackup}>
       <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
         <button
           onClick={handleExport}

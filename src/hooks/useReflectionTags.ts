@@ -2,7 +2,7 @@ import type { ReflectionTemplate } from '../types';
 
 export const generateTags = (
   template: ReflectionTemplate,
-  answers: Record<string, string | number>
+  answers: Record<string, string | number | boolean>
 ): string[] => {
   const tags: string[] = [];
 

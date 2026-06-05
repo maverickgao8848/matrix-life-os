@@ -1,14 +1,15 @@
 import type { StateCreator } from 'zustand';
-import type { Task, DayColumn } from '../../types';
+import type { Task } from '../../types';
 import { getDayColumnFromDate } from '../../utils/date';
 
 export interface TaskSlice {
   tasks: Task[];
-  addTask: (content: string, date: string, abilityId?: string, abilityPoints?: number) => void;
+  addTask: (content: string, date: string, abilityId?: string, abilityPoints?: number, source?: Task['source'], linkedKrId?: string | null) => string;
   deleteTask: (id: string) => void;
   moveTask: (id: string, targetDate: string, newOrder: number) => void;
   toggleTask: (id: string) => void;
-  archiveWeekTasks: (currentWeekStart: string) => void;
+  deleteCompletedTasks: () => void;
+  migrateAllBeforeToday: (today: string) => void;
   migrateUnfinishedTasks: (fromDate: string, toDate: string) => void;
   reorderTasks: (date: string, taskIds: string[]) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
@@ -19,12 +20,13 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 export const createTaskSlice: StateCreator<TaskSlice> = (set, get) => ({
   tasks: [],
 
-  addTask: (content, date, abilityId, abilityPoints) => {
+  addTask: (content, date, abilityId, abilityPoints, source, linkedKrId) => {
     const tasks = get().tasks;
-    const column = date === 'BACKLOG' ? 'MON' as DayColumn : getDayColumnFromDate(new Date(date));
+    const column = getDayColumnFromDate(new Date(date));
     const columnTasks = tasks.filter((t) => t.date === date);
+    const id = generateId();
     const newTask: Task = {
-      id: generateId(),
+      id,
       content,
       column,
       date,
@@ -32,8 +34,11 @@ export const createTaskSlice: StateCreator<TaskSlice> = (set, get) => ({
       order: columnTasks.length,
       abilityId,
       abilityPoints,
+      source: source || 'manual',
+      linkedKrId: linkedKrId ?? null,
     };
     set({ tasks: [...tasks, newTask] });
+    return id;
   },
 
   deleteTask: (id) => {
@@ -45,9 +50,7 @@ export const createTaskSlice: StateCreator<TaskSlice> = (set, get) => ({
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
 
-    const targetColumn = targetDate === 'BACKLOG'
-      ? ('MON' as DayColumn)
-      : getDayColumnFromDate(new Date(targetDate));
+    const targetColumn = getDayColumnFromDate(new Date(targetDate));
 
     const otherTasks = tasks.filter((t) => t.id !== id);
     const targetDateTasks = otherTasks
@@ -78,21 +81,43 @@ export const createTaskSlice: StateCreator<TaskSlice> = (set, get) => ({
     });
   },
 
-  archiveWeekTasks: (_currentWeekStart) => {
+  deleteCompletedTasks: () => {
+    set({ tasks: get().tasks.filter((t) => t.status !== 'completed') });
+  },
+
+  migrateAllBeforeToday: (today) => {
     const tasks = get().tasks;
-    const activeTasks = tasks.filter(
-      (t) => t.date !== 'BACKLOG' && t.status === 'active'
-    );
-    const backlogTasks = tasks.filter((t) => t.date === 'BACKLOG');
-    const migrated = activeTasks.map((t, idx) => ({
+    const todayColumn = getDayColumnFromDate(new Date(today));
+    const activeOldTasks = tasks
+      .filter((t) => t.status === 'active' && t.date < today)
+      .sort((a, b) => a.order - b.order);
+
+    if (activeOldTasks.length === 0) return;
+
+    const existingTodayTasks = tasks
+      .filter((t) => t.date === today)
+      .sort((a, b) => a.order - b.order);
+
+    const migrated = activeOldTasks.map((t, idx) => ({
       ...t,
-      date: 'BACKLOG',
-      column: 'MON' as DayColumn,
-      order: backlogTasks.length + idx,
-      migratedFrom: t.date,
+      date: today,
+      column: todayColumn,
+      order: idx,
+      migratedFrom: t.migratedFrom || t.date,
     }));
 
-    set({ tasks: [...backlogTasks, ...migrated] });
+    const shiftedExisting = existingTodayTasks.map((t, idx) => ({
+      ...t,
+      order: activeOldTasks.length + idx,
+    }));
+
+    const others = tasks.filter(
+      (t) =>
+        t.status !== 'active' ||
+        t.date >= today
+    );
+
+    set({ tasks: [...others, ...migrated, ...shiftedExisting] });
   },
 
   migrateUnfinishedTasks: (fromDate, toDate) => {

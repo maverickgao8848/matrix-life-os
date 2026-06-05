@@ -22,15 +22,17 @@ export interface LegacyReflection {
   updatedAt?: string;
 }
 
-export function isLegacyReflection(r: any): r is LegacyReflection {
+export function isLegacyReflection(r: unknown): r is LegacyReflection {
+  const obj = typeof r === 'object' && r !== null ? (r as Record<string, unknown>) : null;
+  if (!obj) return false;
   return (
-    r &&
-    typeof r.template === 'string' &&
-    r.template === 'obstacle-breakthrough' &&
-    r.answers &&
-    typeof r.answers === 'object' &&
-    !Array.isArray(r.answers) &&
-    'obstacle' in r.answers
+    typeof obj.template === 'string' &&
+    obj.template === 'obstacle-breakthrough' &&
+    obj.answers !== null &&
+    obj.answers !== undefined &&
+    typeof obj.answers === 'object' &&
+    !Array.isArray(obj.answers) &&
+    'obstacle' in (obj.answers as Record<string, unknown>)
   );
 }
 
@@ -51,11 +53,12 @@ export function migrateReflection(
     tags: legacy.tags,
     createdAt: legacy.createdAt,
     updatedAt: legacy.updatedAt,
+    linkedObjectiveIds: [],
   };
 }
 
 export function migrateAllReflections(
-  reflections: any[],
+  reflections: unknown[],
   templates: ReflectionTemplate[]
 ): { reflections: Reflection[]; templates: ReflectionTemplate[] } {
   const hasLegacy = reflections.some(isLegacyReflection);

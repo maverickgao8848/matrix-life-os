@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const DATA_FILE = path.join(app.getPath('userData'), 'alo-data.json');
 const BACKUP_FILE = DATA_FILE + '.bak';
-const ROLLBACK_FILE = DATA_FILE + '.rollback';
+
 const TEMP_FILE = DATA_FILE + '.tmp';
 
 const PACKAGE_JSON = path.join(__dirname, '../package.json');
@@ -89,15 +89,6 @@ ipcMain.on('get-app-version', (event) => {
   }
 });
 
-ipcMain.handle('save-rollback', (_event, data) => {
-  try {
-    fs.writeFileSync(ROLLBACK_FILE, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
-  } catch (e) {
-    console.error('Failed to save rollback:', e);
-    return false;
-  }
-});
 
 // Window lifecycle
 let mainWindow = null;

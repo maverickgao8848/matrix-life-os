@@ -11,8 +11,8 @@ export interface LayoutSlice {
 }
 
 export const DEFAULT_DASHBOARD_LAYOUT: DashboardLayout = {
-  main: ['todayProgress', 'dailyReflection', 'dataBackup', 'timeBlocks'],
-  side: ['principles', 'calendar', 'entertainment', 'habits', 'mood', 'inspiration'],
+  main: ['timeBlocks', 'habits'],
+  side: ['principles', 'calendar', 'entertainment', 'mood', 'inspiration'],
 };
 
 export const DEFAULT_REFLECTION_LAYOUT: TwoColumnLayout = {
@@ -21,8 +21,8 @@ export const DEFAULT_REFLECTION_LAYOUT: TwoColumnLayout = {
 };
 
 export const DEFAULT_SYSTEM_LAYOUT: TwoColumnLayout = {
-  left: ['updatePanel', 'dataBackupRitual'],
-  right: ['aboutBox', 'monkQuote'],
+  left: ['moduleManager'],
+  right: ['aboutBox', 'monkQuote', 'reflectionTemplateManager', 'dataHealthPanel', 'updatePanel', 'manualPanel'],
 };
 
 export const createLayoutSlice: StateCreator<LayoutSlice> = (set) => ({

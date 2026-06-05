@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { useMoodTrend, renderAsciiLineChart } from '../../hooks/useMoodTrend';
 import AsciiBox from '../../components/AsciiBox';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -43,7 +44,7 @@ const MoodTrackerPanel: React.FC = () => {
   };
 
   return (
-    <AsciiBox title="MOOD TRACKER">
+    <AsciiBox title={titlesCopy.moodTracker}>
       {/* Today's entry */}
       <div style={{ marginBottom: 'var(--space-4)' }}>
         <div

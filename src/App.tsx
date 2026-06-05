@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import Dashboard from './pages/Dashboard';
-import Reflection from './pages/Reflection';
+
+const LAST_WORD_INDEX = Math.floor(Math.random() * systemCopy.lastWords.length);
+import ActionDesk from './pages/ActionDesk';
+import ReviewArchive from './pages/ReviewArchive';
 import System from './pages/System';
-import ModulePicker from './features/modules/ModulePicker';
-import { useWeekCleanup } from './hooks/useWeekCleanup';
+
+import { useDayMigration } from './hooks/useDayMigration';
 import { useDocumentTitle } from './hooks/useDocumentTitle';
 import { useAppStore } from './store/useAppStore';
 import { checkUpdate, APP_VERSION } from './utils/checkUpdate';
+
 import { systemCopy } from './copy/system-copy';
 import { aloCopy } from './copy/alo-copy';
 
 function App() {
-  const [page, setPage] = useState<'dashboard' | 'reflection' | 'system'>('dashboard');
-  const [modulePickerOpen, setModulePickerOpen] = useState(false);
+  const [page, setPage] = useState<'actionDesk' | 'reviewArchive' | 'system'>('actionDesk');
+
   const [hasUpdate, setHasUpdate] = useState(false);
   const config = useAppStore((s) => s.config);
   const toggleTheme = useAppStore((s) => s.toggleTheme);
@@ -25,7 +28,7 @@ function App() {
     document.documentElement.dataset.theme = theme;
   }, [config.theme]);
 
-  useWeekCleanup();
+  useDayMigration();
   useDocumentTitle();
 
   // Check for updates on mount
@@ -109,54 +112,54 @@ function App() {
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
           <button
-            onClick={() => setPage('dashboard')}
+            onClick={() => setPage('actionDesk')}
             className="font-h2"
-            title={aloCopy.nav.dashboardHover}
+            title={aloCopy.nav.actionDeskHover}
             style={{
               background: 'none',
               border: 'none',
-              color: page === 'dashboard' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+              color: page === 'actionDesk' ? 'var(--accent-gold)' : 'var(--text-secondary)',
               cursor: 'pointer',
               fontFamily: 'var(--font-mono)',
               padding: 'var(--space-1) var(--space-2)',
               transition: `color var(--duration-instant) var(--ease-instant)`,
             }}
             onMouseEnter={(e) => {
-              if (page !== 'dashboard') {
+              if (page !== 'actionDesk') {
                 e.currentTarget.style.color = 'var(--text-primary)';
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.color =
-                page === 'dashboard' ? 'var(--accent-gold)' : 'var(--text-secondary)';
+                page === 'actionDesk' ? 'var(--accent-gold)' : 'var(--text-secondary)';
             }}
           >
-            {page === 'dashboard' ? '[周看板]' : ' 周看板 '}
+            {page === 'actionDesk' ? '[行动台]' : ' 行动台 '}
           </button>
           <button
-            onClick={() => setPage('reflection')}
+            onClick={() => setPage('reviewArchive')}
             className="font-h2"
-            title={aloCopy.nav.reflectionHover}
+            title={aloCopy.nav.reviewArchiveHover}
             style={{
               background: 'none',
               border: 'none',
-              color: page === 'reflection' ? 'var(--accent-gold)' : 'var(--text-secondary)',
+              color: page === 'reviewArchive' ? 'var(--accent-gold)' : 'var(--text-secondary)',
               cursor: 'pointer',
               fontFamily: 'var(--font-mono)',
               padding: 'var(--space-1) var(--space-2)',
               transition: `color var(--duration-instant) var(--ease-instant)`,
             }}
             onMouseEnter={(e) => {
-              if (page !== 'reflection') {
+              if (page !== 'reviewArchive') {
                 e.currentTarget.style.color = 'var(--text-primary)';
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.color =
-                page === 'reflection' ? 'var(--accent-gold)' : 'var(--text-secondary)';
+                page === 'reviewArchive' ? 'var(--accent-gold)' : 'var(--text-secondary)';
             }}
           >
-            {page === 'reflection' ? '[反思库]' : ' 反思库 '}
+            {page === 'reviewArchive' ? '[回顾档案]' : ' 回顾档案 '}
           </button>
           <button
             onClick={() => setPage('system')}
@@ -188,29 +191,6 @@ function App() {
               </span>
             )}
           </button>
-          <button
-            onClick={() => setModulePickerOpen(true)}
-            className="font-h2"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-mono)',
-              padding: 'var(--space-1) var(--space-2)',
-              transition: `color var(--duration-instant) var(--ease-instant)`,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-            title={aloCopy.nav.moduleHover}
-          >
-            [⊕ 模块]
-          </button>
-
           <button
             onClick={toggleTheme}
             className="font-h2"
@@ -289,12 +269,11 @@ function App() {
         </div>
       )}
 
-      <ModulePicker isOpen={modulePickerOpen} onClose={() => setModulePickerOpen(false)} />
 
       {/* Page Content */}
       <main style={{ padding: 'var(--space-6)' }}>
-        {page === 'dashboard' && <Dashboard />}
-        {page === 'reflection' && <Reflection />}
+        {page === 'actionDesk' && <ActionDesk />}
+        {page === 'reviewArchive' && <ReviewArchive />}
         {page === 'system' && <System />}
       </main>
 
@@ -320,7 +299,7 @@ function App() {
           pointerEvents: 'none',
         }}
       >
-        {systemCopy.lastWords[Math.floor(Math.random() * systemCopy.lastWords.length)]}
+        {systemCopy.lastWords[LAST_WORD_INDEX]}
       </div>
     </div>
   );

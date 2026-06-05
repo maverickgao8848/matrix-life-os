@@ -12,13 +12,19 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import AsciiBox from '../components/AsciiBox';
 import DraggablePanel from '../components/DraggablePanel';
 import UpdatePanel from '../features/system/UpdatePanel';
-import DataBackupRitual from '../features/system/DataBackupRitual';
+import ManualPanel from '../features/system/ManualPanel';
+
+
+import DataHealthPanel from '../features/system/DataHealthPanel';
 import MonkQuote from '../features/system/MonkQuote';
+import ReflectionTemplateManager from '../features/reflections/ReflectionTemplateManager';
+import ModuleManager from '../features/modules/ModuleManager';
 import { useAppStore } from '../store/useAppStore';
 import { systemCopy } from '../copy/system-copy';
+import { titlesCopy } from '../copy/titles-copy';
 
-const ALL_LEFT_PANELS = ['updatePanel', 'dataBackupRitual'];
-const ALL_RIGHT_PANELS = ['aboutBox', 'monkQuote'];
+const ALL_LEFT_PANELS = ['moduleManager'];
+const ALL_RIGHT_PANELS = ['aboutBox', 'monkQuote', 'reflectionTemplateManager', 'dataHealthPanel', 'updatePanel', 'manualPanel'];
 const LEFT_CONTAINER_ID = 'system-left';
 const RIGHT_CONTAINER_ID = 'system-right';
 
@@ -90,8 +96,10 @@ const System: React.FC = () => {
     switch (id) {
       case 'updatePanel':
         return <UpdatePanel />;
-      case 'dataBackupRitual':
-        return <DataBackupRitual />;
+      case 'manualPanel':
+        return <ManualPanel />;
+      case 'dataHealthPanel':
+        return <DataHealthPanel />;
       case 'aboutBox':
         return (
           <AsciiBox title={systemCopy.about.title}>
@@ -99,7 +107,7 @@ const System: React.FC = () => {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'var(--space-3)',
+                gap: 'var(--space-2)',
               }}
             >
               <div className="font-h2" style={{ color: 'var(--accent-gold)' }}>
@@ -108,14 +116,23 @@ const System: React.FC = () => {
               <div className="font-body" style={{ color: 'var(--text-secondary)' }}>
                 {systemCopy.about.description}
               </div>
-              <div className="font-caption" style={{ color: 'var(--text-muted)' }}>
-                {systemCopy.about.author} · {systemCopy.about.license}
-              </div>
             </div>
           </AsciiBox>
         );
       case 'monkQuote':
         return <MonkQuote />;
+      case 'reflectionTemplateManager':
+        return (
+          <AsciiBox title={titlesCopy.reflectionTemplates}>
+            <ReflectionTemplateManager />
+          </AsciiBox>
+        );
+      case 'moduleManager':
+        return (
+          <AsciiBox title={titlesCopy.moduleManager}>
+            <ModuleManager />
+          </AsciiBox>
+        );
       default:
         return null;
     }

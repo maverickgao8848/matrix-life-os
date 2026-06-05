@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useAsciiRadar } from '../../hooks/useAsciiRadar';
 import AsciiBox from '../../components/AsciiBox';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const AsciiRadar: React.FC = () => {
   const { abilities } = useAppStore();
@@ -10,7 +11,7 @@ const AsciiRadar: React.FC = () => {
 
   if (abilities.length === 0) {
     return (
-      <AsciiBox title="ABILITY RADAR">
+      <AsciiBox title={titlesCopy.abilityRadar}>
         <div className="font-body" style={{ color: 'var(--text-muted)' }}>
           {aloCopy.emptyStates.radar}
         </div>
@@ -21,7 +22,7 @@ const AsciiRadar: React.FC = () => {
   const asciiArt = gridLines.map((row) => row.join('')).join('\n');
 
   return (
-    <AsciiBox title="ABILITY RADAR">
+    <AsciiBox title={titlesCopy.abilityRadar}>
       <pre
         className="font-mono-data"
         style={{

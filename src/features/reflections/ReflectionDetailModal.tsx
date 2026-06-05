@@ -14,6 +14,7 @@ const ReflectionDetailModal: React.FC<ReflectionDetailModalProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const reflectionTemplates = useAppStore((s) => s.reflectionTemplates);
+  const objectives = useAppStore((s) => s.objectives);
 
   if (!reflection) return null;
 
@@ -73,6 +74,7 @@ const ReflectionDetailModal: React.FC<ReflectionDetailModalProps> = ({
 
         {isEditing ? (
           <ReflectionForm
+            key={reflection.id}
             date={reflection.date}
             existingReflection={reflection}
             onSave={() => {
@@ -93,12 +95,41 @@ const ReflectionDetailModal: React.FC<ReflectionDetailModalProps> = ({
                   {q.label}:
                 </div>
                 <div className="font-body">
-                  {reflection.answers[q.id] !== undefined
-                    ? String(reflection.answers[q.id])
-                    : '—'}
+                  {q.type === 'boolean' && reflection.answers[q.id] !== undefined
+                    ? (reflection.answers[q.id] ? '是' : '否')
+                    : reflection.answers[q.id] !== undefined
+                      ? String(reflection.answers[q.id])
+                      : '—'}
                 </div>
               </div>
             ))}
+
+            {reflection.linkedObjectiveIds.length > 0 && (
+              <div style={{ marginBottom: 'var(--space-3)' }}>
+                <div className="font-caption" style={{ color: 'var(--text-secondary)' }}>
+                  关联的 O:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                  {reflection.linkedObjectiveIds.map((oid) => {
+                    const obj = objectives.find((o) => o.id === oid);
+                    return (
+                      <span
+                        key={oid}
+                        className="font-body"
+                        style={{
+                          color: 'var(--accent-gold)',
+                          border: '1px solid var(--border-primary)',
+                          padding: 'var(--space-1) var(--space-2)',
+                          display: 'inline-block',
+                        }}
+                      >
+                        {obj ? obj.title : `[未知 O: ${oid}]`}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div style={{ marginBottom: 'var(--space-3)' }}>
               <div className="font-caption" style={{ color: 'var(--text-secondary)' }}>标签:</div>

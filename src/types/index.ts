@@ -13,6 +13,10 @@ export interface Task {
   abilityPoints?: number;
   completedAt?: string;
   migratedFrom?: string;
+  /** 关联的关键结果ID */
+  linkedKrId: string | null;
+  /** 任务来源 */
+  source?: 'manual' | 'inbox' | 'ability' | 'kr';
 }
 
 export interface CalendarEvent {
@@ -45,7 +49,7 @@ export interface Ability {
 export interface ReflectionQuestion {
   id: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'boolean';
   options?: string[];
   min?: number;
   max?: number;
@@ -64,10 +68,12 @@ export interface Reflection {
   id: string;
   date: string;
   templateId: string;
-  answers: Record<string, string | number>;
+  answers: Record<string, string | number | boolean>;
   tags: string[];
   createdAt: string;
   updatedAt?: string;
+  /** 关联的 Objective IDs */
+  linkedObjectiveIds: string[];
 }
 
 export interface Inspiration {
@@ -89,13 +95,25 @@ export interface KeyResult {
   id: string;
   content: string;
   completed: boolean;
+  scheduled: boolean;
+  linkedTaskId: string | null;
 }
 
 export interface Objective {
   id: string;
   title: string;
-  period: string;
-  keyResults: KeyResult[];
+  status: 'active' | 'completed';
+  krList: KeyResult[];
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface ObjectiveArchive {
+  id: string;
+  objectiveTitle: string;
+  krSnapshot: KeyResult[];
+  completedAt: string;
+  createdAt: string;
 }
 
 export interface InboxItem {
@@ -119,13 +137,29 @@ export interface AppConfig {
 
 // ─── Module System ───
 
+export type GtdPhase =
+  | 'capture'
+  | 'support'
+  | 'execute'
+  | 'insight';
+
+export type ModulePage = 'actionDesk' | 'reviewArchive' | 'system' | 'global';
+
 export type ModuleId =
+  // 核心模块
+  | 'inbox'
+  | 'weekBoard'
+  | 'okr'
   | 'principles'
   | 'calendar'
   | 'entertainment'
+  | 'abilities'
+  | 'reflectionLibrary'
+  | 'objectiveArchive'
+  // 可选模块
+  | 'timeBlocks'
   | 'habits'
   | 'mood'
-  | 'timeBlocks'
   | 'inspiration';
 
 export interface ModuleMeta {
@@ -135,6 +169,9 @@ export interface ModuleMeta {
   defaultEnabled: boolean;
   defaultZone: 'main' | 'side';
   icon: string;
+  gtdPhase: GtdPhase;
+  page: ModulePage;
+  core: boolean;
 }
 
 export interface ModuleConfig {
@@ -193,6 +230,7 @@ export interface AppState {
   reflections: Reflection[];
   entertainments: Entertainment[];
   objectives: Objective[];
+  archives: ObjectiveArchive[];
   inboxItems: InboxItem[];
   config: AppConfig;
   enabledModules: ModuleId[];
@@ -214,7 +252,6 @@ declare global {
       loadDataSync: () => Record<string, string> | null;
       saveData: (data: Record<string, string>) => Promise<boolean>;
       getAppVersion: () => string;
-      saveRollback: (data: Record<string, unknown>) => Promise<boolean>;
       onBeforeQuit: (callback: () => void) => void;
     };
   }

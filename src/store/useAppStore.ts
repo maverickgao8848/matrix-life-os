@@ -15,10 +15,11 @@ import { createTimeBlockSlice, type TimeBlockSlice } from './slices/timeBlockSli
 import { createInspirationSlice, type InspirationSlice } from './slices/inspirationSlice';
 import { createReflectionTemplateSlice, type ReflectionTemplateSlice, DEFAULT_TEMPLATE } from './slices/reflectionTemplateSlice';
 import { createLayoutSlice, type LayoutSlice, DEFAULT_DASHBOARD_LAYOUT, DEFAULT_REFLECTION_LAYOUT, DEFAULT_SYSTEM_LAYOUT } from './slices/layoutSlice';
+import { createArchiveSlice, type ArchiveSlice } from './slices/archiveSlice';
 import { migrateAllReflections } from '../utils/migrateReflectionData';
 import { migrateAppData, CURRENT_APP_VERSION } from '../utils/migrateAppData';
 import { electronStorage } from '../utils/electronStorage';
-import type { AppState } from '../types';
+import type { AppState, ModuleId } from '../types';
 
 export type AppStore = TaskSlice &
   CalendarSlice &
@@ -28,6 +29,7 @@ export type AppStore = TaskSlice &
   EntertainmentSlice &
   ConfigSlice &
   OKRSlice &
+  ArchiveSlice &
   ModuleSlice &
   HabitSlice &
   MoodSlice &
@@ -51,6 +53,7 @@ export const useAppStore = create<AppStore>()(
       ...createEntertainmentSlice(...args),
       ...createConfigSlice(...args),
       ...createOKRSlice(...args),
+      ...createArchiveSlice(...args),
       ...createModuleSlice(...args),
       ...createHabitSlice(...args),
       ...createMoodSlice(...args),
@@ -74,6 +77,7 @@ export const useAppStore = create<AppStore>()(
           reflections: state.reflections,
           entertainments: state.entertainments,
           objectives: state.objectives,
+          archives: state.archives,
           inboxItems: state.inboxItems,
           config: state.config,
           enabledModules: state.enabledModules,
@@ -117,6 +121,28 @@ export const useAppStore = create<AppStore>()(
         if (!state.dashboardLayout) state.dashboardLayout = DEFAULT_DASHBOARD_LAYOUT;
         if (!state.reflectionLayout) state.reflectionLayout = DEFAULT_REFLECTION_LAYOUT;
         if (!state.systemLayout) state.systemLayout = DEFAULT_SYSTEM_LAYOUT;
+
+        // Ensure new system panels are present for upgrading users
+        const requiredSystemLeft = ['moduleManager'];
+        const requiredSystemRight = ['aboutBox', 'monkQuote', 'reflectionTemplateManager', 'dataHealthPanel', 'updatePanel'];
+        for (const panel of requiredSystemLeft) {
+          if (!state.systemLayout.left.includes(panel) && !state.systemLayout.right.includes(panel)) {
+            state.systemLayout.left.push(panel);
+          }
+        }
+        for (const panel of requiredSystemRight) {
+          if (!state.systemLayout.left.includes(panel) && !state.systemLayout.right.includes(panel)) {
+            state.systemLayout.right.push(panel);
+          }
+        }
+
+        // Ensure all core modules are present in enabledModules for upgrading users
+        const coreModules: ModuleId[] = [
+          'inbox', 'weekBoard', 'okr', 'principles', 'abilities', 'reflectionLibrary', 'objectiveArchive',
+        ];
+        const currentEnabled = new Set(state.enabledModules || []);
+        coreModules.forEach((id) => currentEnabled.add(id));
+        state.enabledModules = Array.from(currentEnabled);
 
         // Migrate app data version
         const migrated = migrateAppData(state, CURRENT_APP_VERSION);

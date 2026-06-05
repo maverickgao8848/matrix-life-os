@@ -5,7 +5,7 @@
 
 declare const __APP_VERSION__: string;
 
-export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.2.1';
+export const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.3.0';
 
 export interface UpdateInfo {
   version: string;
@@ -14,7 +14,7 @@ export interface UpdateInfo {
 }
 
 const GITHUB_API_URL =
-  'https://api.github.com/repos/buend/ascii-life-os/releases/latest';
+  'https://api.github.com/repos/maverickgao8848/matrix-life-os/releases/latest';
 
 /**
  * 去除版本号前缀的 v/V

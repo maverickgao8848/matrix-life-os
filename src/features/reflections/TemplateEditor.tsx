@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import type { ReflectionQuestion } from '../../types';
 
+const generateQuestionId = () => `q-${Date.now().toString(36).slice(-4)}-${Math.floor(Math.random() * 1000).toString(36)}`;
+
 interface TemplateEditorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,6 +13,7 @@ const QUESTION_TYPE_LABELS: Record<ReflectionQuestion['type'], string> = {
   text: '文本',
   number: '数字',
   select: '选择',
+  boolean: '是/否',
 };
 
 const TemplateEditor: React.FC<TemplateEditorProps> = ({ isOpen, onClose }) => {
@@ -47,7 +50,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ isOpen, onClose }) => {
   const handleAddQuestion = () => {
     if (!editingTemplate || !newQuestion.label?.trim()) return;
     const question: ReflectionQuestion = {
-      id: `q-${Math.random().toString(36).substring(2, 7)}`,
+      id: generateQuestionId(),
       label: newQuestion.label.trim(),
       type: newQuestion.type || 'text',
       required: newQuestion.required || false,
@@ -334,38 +337,47 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({ isOpen, onClose }) => {
                 </button>
               </div>
 
-              {newQuestion.type === 'number' && (
+              {(newQuestion.type === 'number' || newQuestion.type === 'boolean') && (
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                  <input
-                    type="number"
-                    placeholder="最小值"
-                    value={newQuestion.min ?? ''}
-                    onChange={(e) => setNewQuestion((p) => ({ ...p, min: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="font-caption"
-                    style={{
-                      width: '80px',
-                      background: 'transparent',
-                      border: '1px solid var(--border-primary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-mono)',
-                      padding: 'var(--space-1)',
-                    }}
-                  />
-                  <input
-                    type="number"
-                    placeholder="最大值"
-                    value={newQuestion.max ?? ''}
-                    onChange={(e) => setNewQuestion((p) => ({ ...p, max: e.target.value ? Number(e.target.value) : undefined }))}
-                    className="font-caption"
-                    style={{
-                      width: '80px',
-                      background: 'transparent',
-                      border: '1px solid var(--border-primary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-mono)',
-                      padding: 'var(--space-1)',
-                    }}
-                  />
+                  {newQuestion.type === 'number' && (
+                    <>
+                      <input
+                        type="number"
+                        placeholder="最小值"
+                        value={newQuestion.min ?? ''}
+                        onChange={(e) => setNewQuestion((p) => ({ ...p, min: e.target.value ? Number(e.target.value) : undefined }))}
+                        className="font-caption"
+                        style={{
+                          width: '80px',
+                          background: 'transparent',
+                          border: '1px solid var(--border-primary)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'var(--font-mono)',
+                          padding: 'var(--space-1)',
+                        }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="最大值"
+                        value={newQuestion.max ?? ''}
+                        onChange={(e) => setNewQuestion((p) => ({ ...p, max: e.target.value ? Number(e.target.value) : undefined }))}
+                        className="font-caption"
+                        style={{
+                          width: '80px',
+                          background: 'transparent',
+                          border: '1px solid var(--border-primary)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'var(--font-mono)',
+                          padding: 'var(--space-1)',
+                        }}
+                      />
+                    </>
+                  )}
+                  {newQuestion.type === 'boolean' && (
+                    <span className="font-caption" style={{ color: 'var(--text-muted)' }}>
+                      是/否类型无需额外配置
+                    </span>
+                  )}
                 </div>
               )}
 

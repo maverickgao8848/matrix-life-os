@@ -6,6 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-05
+
+### 重构
+- 三页架构 — 行动台 / 回顾档案 / 系统，完全替代旧 Dashboard / 反思库 / 系统页
+- GTD 四阶段模块归类 — 捕捉 / 支撑 / 执行 / 洞察，模块注册表新增 `gtdPhase` 与 `page` 元数据
+- 模块管理迁入系统页 — 导航栏移除全局浮层，统一在「系统 → 功能开关」管理
+- 彻底移除 Backlog 面板及所有相关逻辑、类型、数据字段
+- 彻底移除 Snapshot / Rollback 功能及相关的 IPC、配置、UI、数据字段
+- 新增数据迁移框架 — 启动时按版本链自动迁移旧数据，并保留 `.bak` 备份
+
+### 新增
+- 快速收集箱 + 收集箱处理器 — 支持转为 O / KR / 今日任务 / 灵感 / 删除
+- 行动台 (Action Desk) 页面 — 周看板、OKR、右侧辅助面板统一布局
+- 回顾档案 (Review Archive) 页面 — 反思、能力雷达、能力训练、光荣榜、数据备份
+- 系统页新增「生存指南」Manual 面板
+- 系统页新增「数据体检报告」DataHealth 面板
+- 系统页新增「反思模板」管理面板
+- `titles-copy.ts` 全局模块标题中文趣味翻译
+- `useDayMigration` — 未完成任务自动迁移到今天并标记「来自昨日」
+- `useObjectiveAutoArchive` — O 下所有 KR 完成后自动归档到光荣榜
+
+### 优化
+- KR 拖拽到周看板落点准确性修复（引入 DragOverlay）
+- 任务编辑 ability 下拉框选「无」时 blur bug 修复
+- 更新检测改为直接调用 GitHub Releases API，修正仓库地址
+- 数据导出/导入流程与文案统一
+- 空状态、提示、按钮、导航悬停文案全面重写，统一黑色幽默人格
+- 存储容量预警 — >4MB 控制台警告，>4.5MB 顶部横幅提示
+
+### 技术
+- Zustand store slices 重构 — 新增 `archiveSlice`，移除 backlog 与 snapshot 相关 slice
+- Electron 主进程移除 snapshot/rollback IPC handlers
+- 类型层清理 legacy `BACKLOG`、`autoAddToBacklog`、`SnapshotInfo` 等类型
+- Vite 构建时继续自动注入 `__APP_VERSION__`
+
 ## [0.2.1] - 2026-06-02
 
 ### Added

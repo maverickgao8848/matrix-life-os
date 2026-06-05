@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 import { calculateStreak, calculateWeekProgress } from '../../hooks/useHabitStreak';
 import HabitEditor from './HabitEditor';
 import AsciiBox from '../../components/AsciiBox';
@@ -56,7 +57,7 @@ const HabitTrackerPanel: React.FC = () => {
 
   return (
     <>
-      <AsciiBox title="HABIT TRACKER">
+      <AsciiBox title={titlesCopy.habitTracker}>
         {habits.length === 0 ? (
           <div
             className="font-body"

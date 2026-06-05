@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 import TimeBlockEditor from './TimeBlockEditor';
 import AsciiBox from '../../components/AsciiBox';
+import type { TimeBlock } from '../../types';
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -12,14 +14,35 @@ const TimeBlockPanel: React.FC = () => {
   const addTimeBlock = useAppStore((s) => s.addTimeBlock);
   const deleteTimeBlock = useAppStore((s) => s.deleteTimeBlock);
   const toggleTimeBlockCompleted = useAppStore((s) => s.toggleTimeBlockCompleted);
+  const updateTimeBlock = useAppStore((s) => s.updateTimeBlock);
   const toggleTask = useAppStore((s) => s.toggleTask);
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<TimeBlock | null>(null);
 
   const today = getTodayString();
   const todayBlocks = timeBlocks
     .filter((b) => b.date === today)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const handleEditBlock = (block: TimeBlock) => {
+    setEditingBlock(block);
+  };
+
+  const handleCloseEditor = () => {
+    setEditorOpen(false);
+    setEditingBlock(null);
+  };
+
+  const handleSaveBlock = (block: { date: string; startTime: string; endTime: string; label: string; taskId?: string; completed: boolean }) => {
+    if (editingBlock) {
+      updateTimeBlock(editingBlock.id, block);
+      setEditingBlock(null);
+    } else {
+      addTimeBlock(block);
+      setEditorOpen(false);
+    }
+  };
 
   const getTaskName = (taskId?: string) => {
     if (!taskId) return null;
@@ -35,7 +58,7 @@ const TimeBlockPanel: React.FC = () => {
 
   return (
     <>
-      <AsciiBox title="TIME BLOCKS">
+      <AsciiBox title={titlesCopy.timeBlocks}>
         {todayBlocks.length === 0 ? (
           <div
             className="font-body"
@@ -63,6 +86,7 @@ const TimeBlockPanel: React.FC = () => {
               return (
                 <div
                   key={block.id}
+                  onClick={() => handleEditBlock(block)}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',
@@ -70,6 +94,14 @@ const TimeBlockPanel: React.FC = () => {
                     padding: 'var(--space-2)',
                     borderBottom: '1px solid var(--border-primary)',
                     opacity: block.completed ? 0.6 : 1,
+                    cursor: 'pointer',
+                    transition: 'background-color var(--duration-instant)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
                   {/* Time */}
@@ -202,9 +234,10 @@ const TimeBlockPanel: React.FC = () => {
       </AsciiBox>
 
       <TimeBlockEditor
-        isOpen={editorOpen}
-        onClose={() => setEditorOpen(false)}
-        onSave={(block) => addTimeBlock(block)}
+        isOpen={editorOpen || !!editingBlock}
+        onClose={handleCloseEditor}
+        onSave={handleSaveBlock}
+        initialData={editingBlock || undefined}
       />
     </>
   );

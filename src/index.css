@@ -26,20 +26,20 @@
   --border-hover: #504838;
 
   /* --- Color System: Light Mode --- */
-  --bg-primary-light: #e8e0d0;
-  --bg-secondary-light: #dcd4c4;
-  --bg-tertiary-light: #d0c8b8;
+  --bg-primary-light: #e0d8c8;
+  --bg-secondary-light: #d4ccc0;
+  --bg-tertiary-light: #c8c0b4;
 
-  --text-primary-light: #1a1814;
-  --text-secondary-light: #7a7060;
-  --text-muted-light: #a09888;
+  --text-primary-light: #0a0908;
+  --text-secondary-light: #3a3228;
+  --text-muted-light: #6a6050;
 
-  --accent-gold-light: #9a7a3a;
-  --accent-success-light: #5a7a5a;
-  --accent-danger-light: #a04040;
+  --accent-gold-light: #7a5a20;
+  --accent-success-light: #3a5a3a;
+  --accent-danger-light: #802020;
 
-  --border-primary-light: #b8b0a0;
-  --border-hover-light: #9a9078;
+  --border-primary-light: #8a7e6e;
+  --border-hover-light: #6a6050;
 
   /* --- Typography --- */
   --font-mono: 'JetBrains Mono', 'Courier New', Consolas, monospace;
@@ -303,7 +303,63 @@ pre, code {
 }
 
 /* ============================================================
-   9. Responsive
+   9. Action Desk Layout
+   ============================================================ */
+
+.action-desk {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure task board is visible above the fold on desktop */
+.action-desk > .task-board-scroll {
+  flex-shrink: 0;
+}
+
+/* View switch animation for ReviewArchive */
+.review-view-enter {
+  animation: viewFadeIn var(--duration-slow) var(--ease-settle) both;
+}
+
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Compact side panel: reduced padding and constrained heights */
+.compact-side {
+  padding: 0;
+}
+
+.compact-side .ascii-box {
+  margin-bottom: var(--space-3);
+}
+
+.compact-side .ascii-box-content {
+  padding: var(--space-2);
+}
+
+.compact-module ol,
+.compact-module ul {
+  max-height: 140px;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.compact-module ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+/* ============================================================
+   10. Responsive
    ============================================================ */
 
 @media (min-width: 1920px) {

@@ -3,13 +3,14 @@ import { useAppStore } from '../../store/useAppStore';
 import AsciiBox from '../../components/AsciiBox';
 import AsciiProgress from '../../components/AsciiProgress';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const AbilityListPanel: React.FC = () => {
   const { abilities } = useAppStore();
 
   if (abilities.length === 0) {
     return (
-      <AsciiBox title="ABILITY DISTRIBUTION">
+      <AsciiBox title={titlesCopy.abilityDistribution}>
         <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
           <img
             src="app://resources/alo-empty-state.png"
@@ -25,7 +26,7 @@ const AbilityListPanel: React.FC = () => {
   }
 
   return (
-    <AsciiBox title="ABILITY DISTRIBUTION">
+    <AsciiBox title={titlesCopy.abilityDistribution}>
       {abilities.map((ability) => (
         <div
           key={ability.id}

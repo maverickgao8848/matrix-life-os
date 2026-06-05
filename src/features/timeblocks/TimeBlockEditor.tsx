@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
+import type { TimeBlock } from '../../types';
 
 interface TimeBlockEditorProps {
   isOpen: boolean;
@@ -12,17 +13,42 @@ interface TimeBlockEditorProps {
     taskId?: string;
     completed: boolean;
   }) => void;
+  initialData?: Partial<TimeBlock>;
 }
 
-const TimeBlockEditor: React.FC<TimeBlockEditorProps> = ({ isOpen, onClose, onSave }) => {
+const getNextHourBlock = () => {
+  const now = new Date();
+  const start = new Date(now.getTime() + 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const fmt = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return { startTime: fmt(start), endTime: fmt(end) };
+};
+
+const TimeBlockEditor: React.FC<TimeBlockEditorProps> = ({ isOpen, onClose, onSave, initialData }) => {
   const tasks = useAppStore((s) => s.tasks);
   const today = new Date().toISOString().split('T')[0];
-  const todayTasks = tasks.filter((t) => t.date === today && t.status === 'active');
+  const blockDate = initialData?.date || today;
+  const todayTasks = tasks.filter((t) => t.date === blockDate && t.status === 'active');
 
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('10:00');
+  const defaultBlock = getNextHourBlock();
+  const [startTime, setStartTime] = useState(defaultBlock.startTime);
+  const [endTime, setEndTime] = useState(defaultBlock.endTime);
   const [label, setLabel] = useState('');
   const [taskId, setTaskId] = useState('');
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setStartTime(initialData.startTime || defaultBlock.startTime);
+      setEndTime(initialData.endTime || defaultBlock.endTime);
+      setLabel(initialData.label || '');
+      setTaskId(initialData.taskId || '');
+    } else if (isOpen && !initialData) {
+      setStartTime(defaultBlock.startTime);
+      setEndTime(defaultBlock.endTime);
+      setLabel('');
+      setTaskId('');
+    }
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -30,17 +56,19 @@ const TimeBlockEditor: React.FC<TimeBlockEditorProps> = ({ isOpen, onClose, onSa
     if (!label.trim()) return;
     if (startTime >= endTime) return;
     onSave({
-      date: today,
+      date: blockDate,
       startTime,
       endTime,
       label: label.trim(),
       taskId: taskId || undefined,
-      completed: false,
+      completed: initialData?.completed ?? false,
     });
-    setStartTime('09:00');
-    setEndTime('10:00');
-    setLabel('');
-    setTaskId('');
+    if (!initialData) {
+      setStartTime(defaultBlock.startTime);
+      setEndTime(defaultBlock.endTime);
+      setLabel('');
+      setTaskId('');
+    }
     onClose();
   };
 
@@ -87,7 +115,7 @@ const TimeBlockEditor: React.FC<TimeBlockEditorProps> = ({ isOpen, onClose, onSa
             paddingBottom: 'var(--space-2)',
           }}
         >
-          [ 新建时间块 ]
+          [ {initialData ? '编辑时间块' : '新建时间块'} ]
         </div>
 
         {/* Time row */}

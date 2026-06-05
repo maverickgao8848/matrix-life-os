@@ -3,6 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../types';
 import { useAppStore } from '../../store/useAppStore';
+import { useObjectiveAutoArchive } from '../../hooks/useObjectiveAutoArchive';
 
 interface TaskCardProps {
   task: Task;
@@ -13,7 +14,9 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
   const [editContent, setEditContent] = useState(task.content);
   const [editAbilityId, setEditAbilityId] = useState<string | undefined>(task.abilityId);
   const [editAbilityPoints, setEditAbilityPoints] = useState<number | undefined>(task.abilityPoints);
-  const { toggleTask, deleteTask, updateTask, incrementScore, abilities } = useAppStore();
+  const [editAbilityPointsRaw, setEditAbilityPointsRaw] = useState<string>(task.abilityPoints?.toString() ?? '');
+  const { toggleTask, deleteTask, updateTask, incrementScore, abilities, completeKR, uncompleteKR, objectives } = useAppStore();
+  const { tryArchiveObjective } = useObjectiveAutoArchive();
 
   const {
     attributes,
@@ -51,6 +54,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       setEditContent(task.content);
       setEditAbilityId(task.abilityId);
       setEditAbilityPoints(task.abilityPoints);
+      setEditAbilityPointsRaw(task.abilityPoints?.toString() ?? '');
       setIsEditing(false);
     }
   };
@@ -59,7 +63,34 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
     if (task.status === 'active' && task.abilityId && task.abilityPoints) {
       incrementScore(task.abilityId, task.abilityPoints);
     }
+
+    // KR linkage: when completing a task linked to a KR, mark KR as completed
+    let linkedObjectiveId: string | null = null;
+    if (task.linkedKrId && task.status === 'active') {
+      for (const obj of objectives) {
+        const kr = obj.krList.find((k) => k.id === task.linkedKrId);
+        if (kr) {
+          completeKR(obj.id, kr.id);
+          linkedObjectiveId = obj.id;
+          break;
+        }
+      }
+    } else if (task.linkedKrId && task.status === 'completed') {
+      for (const obj of objectives) {
+        const kr = obj.krList.find((k) => k.id === task.linkedKrId);
+        if (kr) {
+          uncompleteKR(obj.id, kr.id);
+          break;
+        }
+      }
+    }
+
     toggleTask(task.id);
+
+    // After toggling, check if the objective should be auto-archived
+    if (linkedObjectiveId) {
+      tryArchiveObjective(linkedObjectiveId);
+    }
   };
 
   const ability = abilities.find((a) => a.id === task.abilityId);
@@ -81,13 +112,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       }}
     >
       {isEditing ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}
+          onBlur={(e) => {
+            // Only save if focus leaves the entire editing container
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              handleSave();
+            }
+          }}
+        >
           <input
             autoFocus
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
             onKeyDown={handleKeyDown}
-            onBlur={handleSave}
             className="font-body"
             style={{
               background: 'transparent',
@@ -127,10 +165,16 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
             {editAbilityId && (
               <input
                 type="number"
-                min={1}
+                step="0.1"
+                min={0.1}
                 max={100}
-                value={editAbilityPoints || ''}
-                onChange={(e) => setEditAbilityPoints(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                value={editAbilityPointsRaw}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  setEditAbilityPointsRaw(raw);
+                  const parsed = raw ? parseFloat(raw) : undefined;
+                  setEditAbilityPoints(parsed);
+                }}
                 onKeyDown={handleKeyDown}
                 placeholder="分值"
                 className="font-caption"
@@ -173,7 +217,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
             )}
             {task.migratedFrom && (
               <span className="font-caption" style={{ color: 'var(--accent-gold)', marginLeft: 'var(--space-2)' }}>
-                ^ 来自昨日
+                ⤴ 来自昨日
+              </span>
+            )}
+            {task.source === 'kr' && (
+              <span className="font-caption" style={{ color: 'var(--accent-gold)', marginLeft: 'var(--space-2)' }}>
+                [KR]
               </span>
             )}
           </span>
@@ -184,6 +233,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
                 setEditContent(task.content);
                 setEditAbilityId(task.abilityId);
                 setEditAbilityPoints(task.abilityPoints);
+                setEditAbilityPointsRaw(task.abilityPoints?.toString() ?? '');
                 setIsEditing(true);
               }}
               className="font-caption"

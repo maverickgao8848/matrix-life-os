@@ -4,34 +4,49 @@ import AsciiBox from '../../components/AsciiBox';
 import { systemCopy } from '../../copy/system-copy';
 import { aloCopy } from '../../copy/alo-copy';
 
+type ExportMode = 'full' | 'highValue';
+
 const DataBackupRitual: React.FC = () => {
   const store = useAppStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importStatus, setImportStatus] = useState<string>('');
   const [sepiaActive, setSepiaActive] = useState(false);
+  const [exportMode, setExportMode] = useState<ExportMode>('full');
 
   const handleExport = () => {
     setSepiaActive(true);
     setTimeout(() => setSepiaActive(false), 1200);
 
-    const data = {
-      tasks: store.tasks,
-      calendarEvents: store.calendarEvents,
-      principles: store.principles,
-      abilities: store.abilities,
-      reflections: store.reflections,
-      entertainments: store.entertainments,
-      objectives: store.objectives,
-      inboxItems: store.inboxItems,
-      config: store.config,
-      enabledModules: store.enabledModules,
-      habits: store.habits,
-      moods: store.moods,
-      timeBlocks: store.timeBlocks,
-      inspirations: store.inspirations,
-      reflectionTemplates: store.reflectionTemplates,
-      __version: store.__version ?? '0.1.1',
-    };
+    let data: Record<string, unknown>;
+
+    if (exportMode === 'highValue') {
+      data = {
+        reflections: store.reflections,
+        archives: store.archives,
+        config: store.config,
+        __version: store.__version ?? '0.1.1',
+      };
+    } else {
+      data = {
+        tasks: store.tasks,
+        calendarEvents: store.calendarEvents,
+        principles: store.principles,
+        abilities: store.abilities,
+        reflections: store.reflections,
+        entertainments: store.entertainments,
+        objectives: store.objectives,
+        inboxItems: store.inboxItems,
+        config: store.config,
+        enabledModules: store.enabledModules,
+        habits: store.habits,
+        moods: store.moods,
+        timeBlocks: store.timeBlocks,
+        inspirations: store.inspirations,
+        reflectionTemplates: store.reflectionTemplates,
+        archives: store.archives,
+        __version: store.__version ?? '0.1.1',
+      };
+    }
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
       type: 'application/json',
@@ -39,7 +54,8 @@ const DataBackupRitual: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `alo-backup-${new Date().toISOString().split('T')[0]}.json`;
+    const suffix = exportMode === 'highValue' ? 'high-value' : 'full';
+    a.download = `alo-backup-${suffix}-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -87,6 +103,7 @@ const DataBackupRitual: React.FC = () => {
           timeBlocks: json.timeBlocks ?? [],
           inspirations: json.inspirations ?? [],
           reflectionTemplates: json.reflectionTemplates ?? [],
+          archives: json.archives ?? [],
           __version: json.__version ?? '0.1.1',
         });
 
@@ -113,11 +130,47 @@ const DataBackupRitual: React.FC = () => {
           gap: 'var(--space-3)',
         }}
       >
-        <div
-          className="font-caption"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {systemCopy.backup.sepiaHint}
+        {systemCopy.backup.sepiaHint && (
+          <div
+            className="font-caption"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {systemCopy.backup.sepiaHint}
+          </div>
+        )}
+
+        {/* Export mode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <button
+            onClick={() => setExportMode('full')}
+            className="font-caption"
+            style={{
+              background: exportMode === 'full' ? 'var(--bg-tertiary)' : 'none',
+              border: '1px solid var(--border-primary)',
+              color: exportMode === 'full' ? 'var(--text-primary)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              padding: '2px var(--space-2)',
+              fontSize: '11px',
+            }}
+          >
+            {systemCopy.backup.fullExport}
+          </button>
+          <button
+            onClick={() => setExportMode('highValue')}
+            className="font-caption"
+            style={{
+              background: exportMode === 'highValue' ? 'var(--bg-tertiary)' : 'none',
+              border: '1px solid var(--border-primary)',
+              color: exportMode === 'highValue' ? 'var(--text-primary)' : 'var(--text-muted)',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-mono)',
+              padding: '2px var(--space-2)',
+              fontSize: '11px',
+            }}
+          >
+            {systemCopy.backup.highValueExport}
+          </button>
         </div>
 
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>

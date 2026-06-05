@@ -5,7 +5,10 @@ export interface PrincipleSlice {
   principles: Principle[];
   updatePrinciples: (principles: Principle[]) => void;
   reorderPrinciples: (ids: string[]) => void;
+  addPrinciple: (content: string) => void;
 }
+
+const generateId = () => Math.random().toString(36).substring(2, 9);
 
 export const createPrincipleSlice: StateCreator<PrincipleSlice> = (set, get) => ({
   principles: [
@@ -24,5 +27,15 @@ export const createPrincipleSlice: StateCreator<PrincipleSlice> = (set, get) => 
     set({
       principles: reordered.map((p, idx) => ({ ...p, order: idx })),
     });
+  },
+
+  addPrinciple: (content) => {
+    const principles = get().principles;
+    const newPrinciple: Principle = {
+      id: generateId(),
+      content,
+      order: principles.length,
+    };
+    set({ principles: [...principles, newPrinciple] });
   },
 });

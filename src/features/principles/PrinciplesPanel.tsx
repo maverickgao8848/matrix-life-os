@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import AsciiBox from '../../components/AsciiBox';
 import { aloCopy } from '../../copy/alo-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const PrinciplesPanel: React.FC = () => {
   const { principles, updatePrinciples } = useAppStore();
@@ -30,7 +31,7 @@ const PrinciplesPanel: React.FC = () => {
   };
 
   return (
-    <AsciiBox title="MY PRINCIPLES">
+    <AsciiBox title={titlesCopy.myPrinciples}>
       {isEditing ? (
         <div>
           <textarea

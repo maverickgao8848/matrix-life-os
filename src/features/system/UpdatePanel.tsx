@@ -3,6 +3,7 @@ import AsciiBox from '../../components/AsciiBox';
 import { toMonksCalendar } from '../../utils/monksCalendar';
 import { checkUpdate, APP_VERSION } from '../../utils/checkUpdate';
 import { systemCopy } from '../../copy/system-copy';
+import { titlesCopy } from '../../copy/titles-copy';
 
 const UpdatePanel: React.FC = () => {
   const [version, setVersion] = useState<string>(APP_VERSION);
@@ -44,7 +45,7 @@ const UpdatePanel: React.FC = () => {
   }[status];
 
   return (
-    <AsciiBox title="UPDATE">
+    <AsciiBox title={titlesCopy.update}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         <div className="font-body" style={{ color: 'var(--text-secondary)' }}>
           {systemCopy.update.currentVersion}：

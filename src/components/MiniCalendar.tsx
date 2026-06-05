@@ -9,6 +9,7 @@ import {
   isSameMonth,
   isSameDay,
 } from 'date-fns';
+import { useDroppable } from '@dnd-kit/core';
 import { useAppStore } from '../store/useAppStore';
 
 interface MiniCalendarProps {
@@ -71,24 +72,23 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month }) => {
   };
 
   const handleDayClick = (dateStr: string, e: React.MouseEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const popupHeight = 340; // maxHeight of popup
+    const cellRect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const popupWidth = 260;
+    const popupHeight = 340;
     const gap = 4;
 
-    let top = rect.bottom + window.scrollY + gap;
-    // If popup would overflow bottom of viewport, show it above the cell instead
-    if (rect.bottom + popupHeight + gap > window.innerHeight) {
-      top = rect.top + window.scrollY - popupHeight - gap;
+    // Position popup to the top-left of the clicked cell
+    let top = cellRect.top + window.scrollY - popupHeight - gap;
+    let left = cellRect.left + window.scrollX - popupWidth - gap;
+
+    // Fallback: if too close to top edge, show below the cell
+    if (top < window.scrollY + gap) {
+      top = cellRect.bottom + window.scrollY + gap;
     }
 
-    let left = rect.left + window.scrollX;
-    // Keep popup within horizontal viewport bounds
-    if (left + popupWidth > window.innerWidth) {
-      left = window.innerWidth - popupWidth - gap;
-    }
-    if (left < gap) {
-      left = gap;
+    // Fallback: if too close to left edge, show to the right of the cell
+    if (left < window.scrollX + gap) {
+      left = cellRect.right + window.scrollX + gap;
     }
 
     setPopupPosition({ top, left });
@@ -159,6 +159,13 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month }) => {
           const hasTasks = dateTasks.filter((t) => t.status === 'active').length > 0;
           const hasHabits = habits.length > 0;
 
+          const droppableId = `calendar-day-${dateStr}`;
+          const { setNodeRef, isOver } = useDroppable({
+            id: droppableId,
+            disabled: !isCurrentMonth,
+            data: { type: 'calendar-day', date: dateStr },
+          });
+
           let display = format(day, 'd');
           let color: string = 'var(--text-secondary)';
           let bg: string = 'transparent';
@@ -178,9 +185,15 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month }) => {
             color = 'var(--accent-danger)';
           }
 
+          if (isOver) {
+            bg = 'var(--accent-gold)';
+            color = 'var(--bg-primary)';
+          }
+
           return (
             <div
               key={day.toISOString()}
+              ref={setNodeRef}
               className="font-mono-data"
               onClick={(e) => handleDayClick(dateStr, e)}
               title={isCurrentMonth ? `${dateStr} — 点击查看/添加事项` : undefined}
@@ -194,12 +207,12 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month }) => {
                 transition: 'background-color var(--duration-instant)',
               }}
               onMouseEnter={(e) => {
-                if (isCurrentMonth && !isToday) {
+                if (isCurrentMonth && !isToday && !isOver) {
                   e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
                 }
               }}
               onMouseLeave={(e) => {
-                if (isCurrentMonth && !isToday) {
+                if (isCurrentMonth && !isToday && !isOver) {
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }
               }}

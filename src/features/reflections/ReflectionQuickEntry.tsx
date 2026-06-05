@@ -87,6 +87,7 @@ const ReflectionQuickEntry: React.FC = () => {
     <div>
       {showForm && todayReflection ? (
         <ReflectionForm
+          key={todayReflection.id}
           date={today}
           existingReflection={todayReflection}
           onSave={() => setShowForm(false)}
@@ -94,6 +95,7 @@ const ReflectionQuickEntry: React.FC = () => {
       ) : (
         <>
           <ReflectionForm
+            key={`new-${today}`}
             date={today}
             onSave={() => setShowForm(false)}
           />
