@@ -3,6 +3,9 @@
 [![Release](https://img.shields.io/github/v/release/maverickgao8848/matrix-life-os)](https://github.com/maverickgao8848/matrix-life-os/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-blue)]()
 [![License](https://img.shields.io/github/license/maverickgao8848/matrix-life-os)](LICENSE)
+<img width="2723" height="1460" alt="image" src="https://github.com/user-attachments/assets/d01b7cae-9011-49b7-9912-351117f597e8" />
+<img width="2587" height="1505" alt="image" src="https://github.com/user-attachments/assets/60664ef6-87a8-4636-8f54-0febf8f4dcec" />
+
 
 > **你的人生，值得一款操作系统。**
 >
