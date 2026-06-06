@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AsciiBox from '../../components/AsciiBox';
 import { toMonksCalendar } from '../../utils/monksCalendar';
 import { checkUpdate, APP_VERSION } from '../../utils/checkUpdate';
@@ -6,31 +6,37 @@ import { systemCopy } from '../../copy/system-copy';
 import { titlesCopy } from '../../copy/titles-copy';
 
 const UpdatePanel: React.FC = () => {
-  const [version, setVersion] = useState<string>(APP_VERSION);
+  const [version] = useState<string>(() => getRuntimeVersion());
   const [status, setStatus] = useState<
     'idle' | 'checking' | 'up-to-date' | 'has-update' | 'error'
   >('idle');
   const [latestUrl, setLatestUrl] = useState<string>('');
-
-  useEffect(() => {
-    try {
-      const v = window.electronAPI?.getAppVersion?.();
-      if (v) setVersion(v);
-    } catch {
-      // fallback to APP_VERSION
-    }
-  }, []);
+  const [latestVersion, setLatestVersion] = useState<string>('');
+  const [errorDetail, setErrorDetail] = useState<string>('');
+  const [fromCache, setFromCache] = useState<boolean>(false);
 
   const handleCheck = async () => {
     setStatus('checking');
+    setErrorDetail('');
+    setFromCache(false);
+
     const result = await checkUpdate(version);
+    const nextLatest = result.latest;
+
+    setLatestVersion(nextLatest?.version ?? '');
+    setLatestUrl(nextLatest?.url ?? '');
+    setFromCache(Boolean(result.fromCache));
+
     if (result.error) {
-      setStatus('error');
-      return;
+      setErrorDetail(result.fromCache ? `使用上次成功结果；本次失败：${result.error}` : result.error);
+      if (!result.fromCache) {
+        setStatus('error');
+        return;
+      }
     }
+
     if (result.hasUpdate && result.latest) {
       setStatus('has-update');
-      setLatestUrl(result.latest.url);
     } else {
       setStatus('up-to-date');
     }
@@ -92,6 +98,15 @@ const UpdatePanel: React.FC = () => {
             }}
           >
             {statusText}
+            {latestVersion && status !== 'error' && (
+              <>
+                {' '}
+                <span style={{ color: 'var(--text-secondary)' }}>
+                  v{latestVersion}
+                  {fromCache ? '（缓存）' : ''}
+                </span>
+              </>
+            )}
             {status === 'has-update' && latestUrl && (
               <>
                 {' '}
@@ -106,11 +121,38 @@ const UpdatePanel: React.FC = () => {
                 </a>
               </>
             )}
+            {status === 'error' && latestUrl && (
+              <>
+                {' '}
+                <a
+                  href={latestUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ color: 'var(--accent-gold)', textDecoration: 'underline' }}
+                  className="font-caption"
+                >
+                  手动查看
+                </a>
+              </>
+            )}
+            {errorDetail && (
+              <div style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}>
+                {errorDetail}
+              </div>
+            )}
           </div>
         )}
       </div>
     </AsciiBox>
   );
 };
+
+function getRuntimeVersion(): string {
+  try {
+    return window.electronAPI?.getAppVersion?.() || APP_VERSION;
+  } catch {
+    return APP_VERSION;
+  }
+}
 
 export default UpdatePanel;
