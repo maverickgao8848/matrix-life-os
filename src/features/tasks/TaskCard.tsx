@@ -228,6 +228,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
           </span>
           <span className="task-actions hidden" style={{ display: 'flex', gap: 'var(--space-1)' }}>
             <button
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 setEditContent(task.content);
@@ -256,6 +257,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
               [✎]
             </button>
             <button
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 deleteTask(task.id);

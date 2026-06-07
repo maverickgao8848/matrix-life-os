@@ -114,7 +114,7 @@ export const createTaskSlice: StateCreator<TaskSlice> = (set, get) => ({
     const others = tasks.filter(
       (t) =>
         t.status !== 'active' ||
-        t.date >= today
+        t.date > today
     );
 
     set({ tasks: [...others, ...migrated, ...shiftedExisting] });
